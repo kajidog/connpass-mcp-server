@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  connpass-mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    volumes:
+      # Persist cache data
+      - ./data:/app/data
+    restart: unless-stopped
+    environment:
+      # Override with .env file if needed
+      - NODE_ENV=production
+      - MCP_BASE_PATH=${MCP_BASE_PATH:-/mcp}

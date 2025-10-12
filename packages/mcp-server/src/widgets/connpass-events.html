@@ -1,0 +1,2269 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Connpass Events</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        --connpass-surface: #0d0d0d0d;;
+        --connpass-card-bg: #fff;
+        --connpass-card-border: rgba(17, 17, 17, 0.08);
+        --connpass-card-shadow: rgba(17, 17, 17, 0.06);
+        --connpass-text-primary: rgba(17, 17, 17, 0.92);
+        --connpass-text-secondary: rgba(17, 17, 17, 0.6);
+        --connpass-text-muted: rgba(17, 17, 17, 0.45);
+        --connpass-button-bg: #111;
+        --connpass-button-bg-hover: rgba(17, 17, 17, 0.88);
+        --connpass-button-text: #fff;
+        --connpass-accent: #2563eb;
+        --connpass-badge-bg: rgba(255, 173, 51, 0.18);
+        --connpass-badge-text: #a35400;
+        background-color: transparent;
+        color: var(--connpass-text-primary);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          color-scheme: dark;
+          --connpass-surface: #333;
+          --connpass-card-bg: rgba(48, 49, 55, 0.92);
+          --connpass-card-border: rgba(255, 255, 255, 0.08);
+          --connpass-card-shadow: rgba(0, 0, 0, 0.45);
+          --connpass-text-primary: rgba(255, 255, 255, 0.92);
+          --connpass-text-secondary: rgba(255, 255, 255, 0.7);
+          --connpass-text-muted: rgba(255, 255, 255, 0.5);
+          --connpass-button-bg: rgba(255, 255, 255, 0.12);
+          --connpass-button-bg-hover: rgba(255, 255, 255, 0.2);
+          --connpass-button-text: rgba(255, 255, 255, 0.96);
+          --connpass-accent: #60a5fa;
+          --connpass-badge-bg: rgba(251, 191, 36, 0.2);
+          --connpass-badge-text: rgba(251, 191, 36, 0.92);
+        }
+      }
+
+      body {
+        margin: 0;
+        background: transparent;
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--connpass-text-primary);
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      button {
+        font: inherit;
+      }
+
+      .connpass-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        min-height: 200px;
+        border: 1px dashed var(--connpass-card-border);
+        border-radius: 18px;
+        padding: 16px 24px;
+        background: var(--connpass-surface);
+        color: var(--connpass-text-secondary);
+        text-align: center;
+      }
+
+      .connpass-carousel {
+        position: relative;
+        width: 100%;
+        padding: 18px 16px;
+        background: var(--connpass-surface);
+        box-shadow: 0 12px 30px var(--connpass-card-shadow);
+      }
+
+      .connpass-carousel__scroller {
+        display: flex;
+        gap: 16px;
+        overflow-x: auto;
+        overscroll-behavior-x: contain;
+        scroll-snap-type: x mandatory;
+        padding-bottom: 6px;
+        background: var(--connpass-surface);
+      }
+
+      .connpass-carousel__scroller::-webkit-scrollbar {
+        display: none;
+      }
+
+      .connpass-card {
+        position: relative;
+        flex: 0 0 280px;
+        width: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        gap: 18px;
+        min-height: 260px;
+        background: var(--connpass-card-bg);
+        border: 1px solid var(--connpass-card-border);
+        border-radius: 20px;
+        box-shadow: 0 18px 35px var(--connpass-card-shadow);
+        padding: 18px;
+        scroll-snap-align: start;
+        transition: transform 160ms ease, box-shadow 160ms ease;
+      }
+
+      .connpass-card__content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+        width: 100%;
+      }
+
+      .connpass-card__media {
+        position: relative;
+        overflow: hidden;
+        border-radius: 16px;
+        aspect-ratio: 16 / 9;
+        margin: -18px -18px 0px;
+        background: color-mix(in srgb, var(--connpass-accent) 14%, transparent);
+        max-height: 200px;
+      }
+
+      .connpass-card__media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .connpass-card__media--fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--connpass-text-secondary);
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        font-size: 13px;
+        padding: 0 12px;
+        text-align: center;
+      }
+
+      .connpass-card__media-fallback-label {
+        display: block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        width: 100%;
+      }
+
+      .connpass-hero {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        background: color-mix(in srgb, var(--connpass-accent) 18%, transparent);
+        max-height: min(40vh, 320px);
+        border-bottom: 1px solid var(--connpass-card-border);
+      }
+
+      .connpass-hero img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .connpass-hero--fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--connpass-text-secondary);
+        font-size: 18px;
+        font-weight: 650;
+        letter-spacing: 0.02em;
+        text-transform: none;
+        padding: 0 24px;
+        text-align: center;
+      }
+
+      .connpass-hero__label {
+        display: block;
+        max-width: 90%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .connpass-hero__badge {
+        position: absolute;
+        bottom: 12px;
+        left: 16px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--connpass-card-bg) 82%, transparent);
+        color: var(--connpass-text-primary);
+        font-size: 12px;
+        font-weight: 600;
+        box-shadow: 0 10px 18px var(--connpass-card-shadow);
+      }
+
+      .connpass-card__content .connpass-badge {
+        margin-top: 12px;
+        align-self: flex-start;
+      }
+
+      .connpass-pill-button--ghost {
+        background: var(--connpass-card-bg);
+        color: var(--connpass-text-secondary);
+        border-color: var(--connpass-card-border);
+      }
+
+      .connpass-pill-button--ghost:hover {
+        background: color-mix(in srgb, var(--connpass-card-bg) 80%, transparent);
+      }
+
+      .connpass-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 22px 40px var(--connpass-card-shadow);
+      }
+
+      .connpass-agenda {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        padding: 18px 16px 24px;
+        background: var(--connpass-surface);
+      }
+
+      .connpass-agenda__chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .connpass-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--connpass-accent) 18%, transparent);
+        color: var(--connpass-accent);
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.01em;
+      }
+
+      .connpass-agenda__section {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .connpass-agenda__section-header {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+
+      .connpass-agenda__section-title {
+        margin: 0;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--connpass-text-primary);
+      }
+
+      .connpass-agenda__section-subtitle {
+        margin: 0;
+        font-size: 13px;
+        color: var(--connpass-text-secondary);
+      }
+
+      .connpass-agenda__list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .connpass-agenda__empty {
+        border-radius: 16px;
+        border: 1px dashed var(--connpass-card-border);
+        padding: 20px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--connpass-text-secondary);
+        background: color-mix(in srgb, var(--connpass-card-bg) 65%, transparent);
+      }
+
+      .connpass-agenda__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--connpass-text-muted);
+        padding-top: 8px;
+      }
+
+      .connpass-list-card {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        border-radius: 18px;
+        border: 1px solid var(--connpass-card-border);
+        background: var(--connpass-card-bg);
+        box-shadow: 0 18px 35px var(--connpass-card-shadow);
+        padding: 16px;
+      }
+
+      .connpass-list-card__header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--connpass-card-border);
+      }
+
+      .connpass-list-card__header-media {
+        flex: 0 0 48px;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--connpass-accent) 14%, transparent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .connpass-list-card__header-media img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .connpass-list-card__media-fallback {
+        font-size: 10px;
+        font-weight: 600;
+        color: var(--connpass-text-secondary);
+        text-align: center;
+        padding: 0 4px;
+      }
+
+      .connpass-list-card__header-text {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .connpass-list-card__title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 650;
+        color: var(--connpass-text-primary);
+        line-height: 1.3;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .connpass-list-card__owner {
+        font-size: 12px;
+        color: var(--connpass-text-secondary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .connpass-list-card__body {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        min-width: 0;
+      }
+
+      .connpass-list-card__catchphrase {
+        margin: 0;
+        font-size: 13px;
+        color: var(--connpass-text-secondary);
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .connpass-list-card__meta {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .connpass-list-card__meta .connpass-row {
+        margin: 0;
+      }
+
+      .connpass-list-card__actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: auto;
+      }
+
+      .connpass-card__title {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 650;
+        line-height: 1.3;
+        width: 100%;
+      }
+
+      .connpass-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: var(--connpass-badge-bg);
+        color: var(--connpass-badge-text);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 1;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .connpass-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        color: var(--connpass-text-secondary);
+        font-size: 13px;
+      }
+
+      .connpass-card__content .connpass-row {
+        margin: 0;
+      }
+
+      .connpass-card__content .connpass-badge,
+      .connpass-card__content .connpass-tag,
+      .connpass-card__content .connpass-card__catchphrase {
+        margin: 0;
+      }
+
+      .connpass-row__icon {
+        width: 16px;
+        height: 16px;
+        margin-top: 2px;
+        color: var(--connpass-text-muted);
+      }
+
+      .connpass-card__footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-top: auto;
+        padding-top: 12px;
+        border-top: 1px solid var(--connpass-card-border);
+      }
+
+      .connpass-btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 999px;
+        border: none;
+        background: var(--connpass-button-bg);
+        color: var(--connpass-button-text);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 120ms ease;
+      }
+
+      .connpass-btn-primary:hover {
+        background: var(--connpass-button-bg-hover);
+      }
+
+      .connpass-btn-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: #2563eb;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .connpass-carousel__nav {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 38px;
+        height: 38px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 999px;
+        background: var(--connpass-card-bg);
+        box-shadow: 0 14px 22px var(--connpass-card-shadow);
+        border: 1px solid var(--connpass-card-border);
+        cursor: pointer;
+      }
+
+      .connpass-carousel__nav:disabled {
+        opacity: 0.4;
+        cursor: default;
+      }
+
+      .connpass-carousel__nav--prev {
+        left: 8px;
+      }
+
+      .connpass-carousel__nav--next {
+        right: 8px;
+      }
+
+      .connpass-fullscreen {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: var(--connpass-surface);
+        color: var(--connpass-text-primary);
+        overflow-y: auto;
+        overflow-x: hidden;
+        scrollbar-gutter: stable both-edges;
+      }
+
+      .connpass-fullscreen__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        padding: 20px 26px;
+        border-bottom: 1px solid var(--connpass-card-border);
+      }
+
+      .connpass-fullscreen__header-main {
+        flex: 1 1 auto;
+        min-width: 220px;
+      }
+
+      .connpass-fullscreen__header button {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+
+      .connpass-fullscreen__body {
+        flex: 1 0 auto;
+        padding: 24px 26px 48px;
+      }
+
+      .connpass-fullscreen__body section {
+        margin-bottom: 28px;
+      }
+
+      .connpass-fullscreen__body h2 {
+        margin: 0 0 12px;
+        font-size: 14px;
+        font-weight: 650;
+        color: var(--connpass-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+      }
+
+      .connpass-fullscreen__body p {
+        margin: 0;
+        font-size: 15px;
+        color: var(--connpass-text-primary);
+        line-height: 1.7;
+      }
+
+      .connpass-summary {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .connpass-summary__heading {
+        margin: 16px 0 -4px;
+        font-size: 14px;
+        font-weight: 650;
+        color: var(--connpass-text-secondary);
+        letter-spacing: 0.02em;
+      }
+
+      .connpass-summary__heading:first-child {
+        margin-top: 0;
+      }
+
+      .connpass-summary__list {
+        margin: 0;
+        padding-left: 1.25em;
+        list-style: disc;
+        list-style-position: outside;
+        color: var(--connpass-text-primary);
+      }
+
+      .connpass-summary__list--compact {
+        font-size: 13px;
+        padding-left: 1.2em;
+        list-style-type: circle;
+      }
+
+      .connpass-summary__list li + li {
+        margin-top: 6px;
+      }
+
+      .connpass-summary__list--compact li + li {
+        margin-top: 4px;
+      }
+
+      .connpass-note {
+        border-left: 3px solid color-mix(in srgb, var(--connpass-accent) 45%, transparent);
+        padding-left: 10px;
+        font-size: 13px;
+        color: var(--connpass-text-secondary);
+      }
+
+      .connpass-schedule-table {
+        width: 100%;
+        margin: 6px 0 0;
+        border-collapse: collapse;
+        border: 1px solid color-mix(in srgb, var(--connpass-card-border) 75%, transparent);
+        border-radius: 14px;
+        overflow: hidden;
+        background: color-mix(in srgb, var(--connpass-card-bg) 96%, transparent);
+      }
+
+      .connpass-schedule-table thead {
+        background: color-mix(in srgb, var(--connpass-accent) 12%, transparent);
+      }
+
+      .connpass-schedule-table th,
+      .connpass-schedule-table td {
+        padding: 10px 14px;
+        border-bottom: 1px solid color-mix(in srgb, var(--connpass-card-border) 90%, transparent);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      .connpass-schedule-table thead th {
+        font-size: 12px;
+        font-weight: 650;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: color-mix(in srgb, var(--connpass-text-secondary) 85%, var(--connpass-text-primary));
+      }
+
+      .connpass-schedule-table tbody tr:last-child th,
+      .connpass-schedule-table tbody tr:last-child td {
+        border-bottom: none;
+      }
+
+      .connpass-schedule-table__time {
+        width: 140px;
+        font-weight: 700;
+        font-size: 14px;
+        color: var(--connpass-text-primary);
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+      }
+
+      .connpass-schedule-table__content {
+        color: var(--connpass-text-secondary);
+        font-size: 14px;
+      }
+
+      .connpass-schedule__description {
+        font-weight: 600;
+        color: var(--connpass-text-primary);
+        margin-bottom: 6px;
+      }
+
+      .connpass-schedule__notes {
+        margin-top: 6px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .connpass-link {
+        color: var(--connpass-accent);
+        text-decoration: underline;
+        text-decoration-thickness: 1.5px;
+        text-underline-offset: 4px;
+        word-break: break-word;
+      }
+
+      .connpass-link:hover {
+        color: color-mix(in srgb, var(--connpass-accent) 80%, var(--connpass-text-primary));
+      }
+
+      .connpass-fullscreen__footer {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 26px 125px;
+        border-top: 1px solid var(--connpass-card-border);
+        background: color-mix(in srgb, var(--connpass-surface) 85%, transparent);
+      }
+
+      .connpass-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        font-weight: 550;
+        color: var(--connpass-accent);
+        padding: 4px 8px;
+        border-radius: 999px;
+        background: color-mix(in srgb, var(--connpass-accent) 18%, transparent);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        line-height: 1.3;
+        width: fit-content;
+        max-width: 100%;
+      }
+
+      .connpass-card__catchphrase {
+        font-size: 13px;
+        color: var(--connpass-text-secondary);
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        width: 100%;
+      }
+
+      .connpass-icon {
+        width: 16px;
+        height: 16px;
+        display: inline-block;
+        flex-shrink: 0;
+      }
+
+      .connpass-row__label {
+        display: block;
+      }
+
+      .connpass-text-sub {
+        font-size: 12px;
+        color: var(--connpass-text-muted);
+        margin-top: 2px;
+      }
+
+      .connpass-pill-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--connpass-card-border);
+        background: color-mix(in srgb, var(--connpass-accent) 18%, transparent);
+        color: var(--connpass-accent);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .connpass-presentations {
+        display: grid;
+        gap: 12px;
+      }
+
+      .connpass-presentation {
+        padding: 14px 16px;
+        border-radius: 16px;
+        border: 1px solid var(--connpass-card-border);
+        background: var(--connpass-card-bg);
+        box-shadow: 0 16px 30px var(--connpass-card-shadow);
+      }
+
+      .connpass-presentation__header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+      }
+
+      .connpass-presentation__links {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .connpass-link-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        border-radius: 999px;
+        border: 1px solid color-mix(in srgb, var(--connpass-accent) 35%, transparent);
+        background: color-mix(in srgb, var(--connpass-accent) 18%, transparent);
+        color: var(--connpass-accent);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .connpass-link-pill:hover {
+        background: color-mix(in srgb, var(--connpass-accent) 26%, transparent);
+      }
+
+      .connpass-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 18px;
+        color: var(--connpass-text-secondary);
+        font-size: 13px;
+      }
+
+      .connpass-dots {
+        display: inline-flex;
+        gap: 6px;
+      }
+
+      .connpass-dots span {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--connpass-text-muted);
+        opacity: 0.3;
+        animation: connpass-dotPulse 1.2s ease-in-out infinite;
+      }
+
+      .connpass-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+
+      .connpass-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+
+      @keyframes connpass-dotPulse {
+        0%,
+        100% {
+          opacity: 0.2;
+        }
+        50% {
+          opacity: 0.9;
+        }
+      }
+
+      .connpass-detail-grid {
+        display: grid;
+        gap: 12px;
+      }
+
+      .connpass-detail-grid .connpass-row {
+        margin-top: 0;
+      }
+
+      @media (max-width: 480px) {
+        .connpass-card {
+          flex-basis: 240px;
+        }
+
+        .connpass-carousel {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+
+        .connpass-carousel__nav {
+          display: none;
+        }
+
+        .connpass-list-card {
+          flex-direction: column;
+        }
+
+        .connpass-list-card__media {
+          width: 100%;
+          height: auto;
+          aspect-ratio: 16 / 9;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="connpass-events-root"></div>
+    <script>
+      (function () {
+        const scrollLockState = {
+          locked: false,
+          body: "",
+          doc: "",
+        };
+
+        const state = {
+          displayMode: window.openai?.displayMode ?? "inline",
+          toolOutput: window.openai?.toolOutput ?? null,
+          widgetState: normaliseWidgetState(window.openai?.widgetState),
+        };
+
+        const PARTICIPANTS_ICON_PATH =
+          "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-14a4 4 0 1 0 0-8 4 4 0 0 0 0 8z";
+
+        function updateBodyScrollLock(shouldLock) {
+          const body = document.body;
+          const doc = document.documentElement;
+          if (!body || !doc) return;
+
+          if (shouldLock && !scrollLockState.locked) {
+            scrollLockState.locked = true;
+            scrollLockState.body = body.style.overflow;
+            scrollLockState.doc = doc.style.overflow;
+            body.style.overflow = "hidden";
+            doc.style.overflow = "hidden";
+          } else if (!shouldLock && scrollLockState.locked) {
+            scrollLockState.locked = false;
+            body.style.overflow = scrollLockState.body;
+            doc.style.overflow = scrollLockState.doc;
+          }
+        }
+
+        function normaliseWidgetState(value) {
+          if (value && typeof value === "object" && value.selectedEventId != null) {
+            const numeric = Number(value.selectedEventId);
+            if (Number.isFinite(numeric)) {
+              return { selectedEventId: numeric };
+            }
+          }
+          return { selectedEventId: null };
+        }
+
+        function sanitizeEventList(value) {
+          if (!Array.isArray(value)) {
+            return [];
+          }
+          return value.filter((event) => event && typeof event === "object");
+        }
+
+        function formatJapaneseDate(ymd) {
+          if (!ymd) return "";
+          const match = /^([0-9]{4})-([0-9]{2})-([0-9]{2})$/.exec(String(ymd));
+          if (!match) return String(ymd);
+          const [, year, month, day] = match;
+          const parsed = new Date(Number(year), Number(month) - 1, Number(day));
+          if (!Number.isFinite(parsed.valueOf())) {
+            return String(ymd);
+          }
+          try {
+            return new Intl.DateTimeFormat("ja-JP", {
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+              weekday: "short",
+            }).format(parsed);
+          } catch (error) {
+            return String(ymd);
+          }
+        }
+
+        function buildUpcomingSubtitle(context) {
+          const parts = [];
+          if (typeof context.daysAhead === "number" && Number.isFinite(context.daysAhead)) {
+            parts.push(`あと${context.daysAhead}日`);
+          }
+          if (context.todayDate && context.rangeEnd) {
+            parts.push(`${formatJapaneseDate(context.todayDate)} 〜 ${formatJapaneseDate(context.rangeEnd)}`);
+          } else if (context.rangeEnd) {
+            parts.push(`〜 ${formatJapaneseDate(context.rangeEnd)}`);
+          }
+          return parts.join(" / ");
+        }
+
+        function normaliseToolOutput() {
+          const rawData = state.toolOutput?.data ?? null;
+          const metadata = rawData && typeof rawData === "object" ? rawData.metadata ?? null : null;
+          const userId = rawData && typeof rawData.userId === "number" ? rawData.userId : null;
+
+          if (rawData && Array.isArray(rawData.events)) {
+            const events = sanitizeEventList(rawData.events);
+            const returnedRaw = Number(rawData.returned ?? events.length ?? 0);
+            return {
+              variant: "search",
+              events,
+              returned: Number.isFinite(returnedRaw) ? returnedRaw : events.length,
+              sections: [],
+              metadata,
+              userId,
+            };
+          }
+
+          const todayBlock = rawData && typeof rawData === "object" ? rawData.today ?? null : null;
+          const upcomingBlock = rawData && typeof rawData === "object" ? rawData.upcoming ?? null : null;
+
+          const todayEvents = todayBlock ? sanitizeEventList(todayBlock.events) : [];
+          const upcomingEvents = upcomingBlock ? sanitizeEventList(upcomingBlock.events) : [];
+
+          if (todayBlock || upcomingBlock) {
+            const sections = [];
+            if (todayBlock) {
+              sections.push({
+                key: "today",
+                title: "本日のイベント",
+                subtitle: formatJapaneseDate(todayBlock.date) || "本日",
+                events: todayEvents,
+                emptyText: "今日は参加予定のイベントがありません。",
+              });
+            }
+            if (upcomingBlock) {
+              sections.push({
+                key: "upcoming",
+                title: "今後のイベント",
+                subtitle: buildUpcomingSubtitle({
+                  todayDate: todayBlock?.date ?? null,
+                  rangeEnd: upcomingBlock.rangeEnd ?? null,
+                  daysAhead: metadata?.daysAhead,
+                }),
+                events: upcomingEvents,
+                emptyText: "今後予定されているイベントはありません。",
+              });
+            }
+
+            const combinedEvents = todayEvents.concat(upcomingEvents);
+            return {
+              variant: "agenda",
+              events: combinedEvents,
+              sections,
+              metadata,
+              userId,
+              returned: combinedEvents.length,
+            };
+          }
+
+          const returnedRaw = rawData ? Number(rawData.returned ?? 0) : 0;
+          return {
+            variant: "search",
+            events: [],
+            sections: [],
+            metadata,
+            userId,
+            returned: Number.isFinite(returnedRaw) ? returnedRaw : 0,
+          };
+        }
+
+        function formatDateRange(event) {
+          try {
+            const start = new Date(event.schedule?.start ?? "");
+            const end = new Date(event.schedule?.end ?? "");
+            if (!Number.isFinite(start.valueOf()) || !Number.isFinite(end.valueOf())) {
+              return "日程未定";
+            }
+            const sameDay =
+              start.getFullYear() === end.getFullYear() &&
+              start.getMonth() === end.getMonth() &&
+              start.getDate() === end.getDate();
+            const dateFormatter = new Intl.DateTimeFormat("ja-JP", {
+              month: "short",
+              day: "numeric",
+              weekday: "short",
+            });
+            const timeFormatter = new Intl.DateTimeFormat("ja-JP", {
+              hour: "2-digit",
+              minute: "2-digit",
+            });
+            const startStr = `${dateFormatter.format(start)} ${timeFormatter.format(start)}`;
+            const endStr = sameDay
+              ? timeFormatter.format(end)
+              : `${dateFormatter.format(end)} ${timeFormatter.format(end)}`;
+            return `${startStr} 〜 ${endStr}`;
+          } catch (error) {
+            return "日程未定";
+          }
+        }
+
+        function participantsLabel(participants) {
+          if (!participants) return "0";
+          const accepted = Number(participants.accepted ?? 0);
+          const limit = Number(participants.limit ?? 0);
+          const waiting = Number(participants.waiting ?? 0);
+          if (limit > 0) {
+            const waitText = waiting > 0 ? ` / 補欠 ${waiting}` : "";
+            return `${accepted} / ${limit}${waitText}`;
+          }
+          return waiting > 0 ? `${accepted} (+補欠 ${waiting})` : `${accepted}`;
+        }
+
+        const SUMMARY_SECTION_HEADINGS = new Set([
+          "概要",
+          "この会について",
+          "対象",
+          "会場",
+          "持ち物",
+          "参加費",
+          "Slack",
+          "情報共有",
+          "最寄り駅",
+          "アクセス",
+          "連絡先",
+        ]);
+
+        const SUMMARY_SKIP_HEADINGS = new Set(["日時", "時間", "内容", "スケジュール"]);
+        const SCHEDULE_HEADER_CANDIDATES = new Set(["時間", "内容"]);
+
+        function normaliseHeadingText(text) {
+          return String(text ?? "")
+            .trim()
+            .replace(/[：:]+$/, "");
+        }
+
+        function isScheduleLine(value) {
+          return /^\d{1,2}:\d{2}/.test(value);
+        }
+
+        function normaliseScheduleLabel(value) {
+          return String(value ?? "")
+            .replace(/\s*[-〜–—]\s*/gu, " - ")
+            .replace(/\s+/g, " ")
+            .trim();
+        }
+
+        function isBulletLine(value) {
+          return /^[\-*・◆■●▶︎]\s*/.test(value);
+        }
+
+        function stripBullet(value) {
+          return String(value ?? "")
+            .replace(/^[\-*・◆■●▶︎]\s*/, "")
+            .trim();
+        }
+
+        function isLikelyUrl(value) {
+          return /^https?:\/\//i.test(value);
+        }
+
+        function isNoteLine(value) {
+          return /^※/.test(value);
+        }
+
+        function createExternalLink(url, label) {
+          const anchor = document.createElement("a");
+          anchor.href = url;
+          anchor.textContent = label ?? url;
+          anchor.className = "connpass-link";
+          anchor.target = "_blank";
+          anchor.rel = "noopener noreferrer";
+          anchor.addEventListener("click", (event) => {
+            event.preventDefault();
+            openExternal(url);
+          });
+          return anchor;
+        }
+
+        function buildSummaryBlocks(summary) {
+          const segments = String(summary ?? "")
+            .split(/\n+/)
+            .map((segment) => segment.trim())
+            .filter(Boolean);
+
+          const blocks = [];
+          let index = 0;
+          let pendingScheduleHeaders = [];
+
+          while (index < segments.length) {
+            const current = segments[index];
+            const headingText = normaliseHeadingText(current);
+
+            if (SUMMARY_SKIP_HEADINGS.has(headingText)) {
+              if (SCHEDULE_HEADER_CANDIDATES.has(headingText)) {
+                if (!pendingScheduleHeaders.includes(headingText)) {
+                  pendingScheduleHeaders.push(headingText);
+                }
+              }
+              index += 1;
+              continue;
+            }
+
+            if (SUMMARY_SECTION_HEADINGS.has(headingText)) {
+              if (!(blocks.length === 0 && headingText === "概要")) {
+                blocks.push({ type: "heading", text: headingText });
+              }
+              pendingScheduleHeaders = [];
+              index += 1;
+              continue;
+            }
+
+            if (isScheduleLine(current)) {
+              const entries = [];
+              while (index < segments.length && isScheduleLine(segments[index])) {
+                const timeRaw = segments[index];
+                index += 1;
+                const entry = {
+                  time: normaliseScheduleLabel(timeRaw),
+                  description: undefined,
+                  details: [],
+                };
+
+                while (index < segments.length) {
+                  const peek = segments[index];
+                  const peekHeading = SUMMARY_SECTION_HEADINGS.has(normaliseHeadingText(peek));
+                  const peekSkip = SUMMARY_SKIP_HEADINGS.has(normaliseHeadingText(peek));
+                  if (peekHeading || peekSkip || isScheduleLine(peek)) {
+                    break;
+                  }
+                  if (isBulletLine(peek)) {
+                    entry.details.push(stripBullet(peek));
+                    index += 1;
+                    continue;
+                  }
+                  if (isNoteLine(peek)) {
+                    entry.details.push(peek);
+                    index += 1;
+                    continue;
+                  }
+                  if (!entry.description) {
+                    entry.description = peek;
+                    index += 1;
+                    continue;
+                  }
+                  break;
+                }
+
+                entries.push(entry);
+              }
+
+              if (entries.length > 0) {
+                const scheduleBlock = { type: "schedule", entries };
+                if (pendingScheduleHeaders.length > 0) {
+                  scheduleBlock.headers = pendingScheduleHeaders.slice(0, 2);
+                }
+                blocks.push(scheduleBlock);
+              }
+              pendingScheduleHeaders = [];
+              continue;
+            }
+
+            if (isBulletLine(current)) {
+              const items = [];
+              while (index < segments.length && isBulletLine(segments[index])) {
+                items.push(stripBullet(segments[index]));
+                index += 1;
+              }
+              blocks.push({ type: "list", items });
+              pendingScheduleHeaders = [];
+              continue;
+            }
+
+            if (isNoteLine(current)) {
+              blocks.push({ type: "note", text: current });
+              pendingScheduleHeaders = [];
+              index += 1;
+              continue;
+            }
+
+            if (isLikelyUrl(current)) {
+              blocks.push({ type: "link", href: current });
+              pendingScheduleHeaders = [];
+              index += 1;
+              continue;
+            }
+
+            blocks.push({ type: "paragraph", text: current });
+            pendingScheduleHeaders = [];
+            index += 1;
+          }
+
+          return blocks;
+        }
+
+        function renderSummaryContent(target, summary) {
+          const blocks = buildSummaryBlocks(summary);
+          if (blocks.length === 0) {
+            const fallback = document.createElement("p");
+            fallback.textContent = summary;
+            target.appendChild(fallback);
+            return;
+          }
+
+          const container = document.createElement("div");
+          container.className = "connpass-summary";
+
+          blocks.forEach((block, order) => {
+            if (block.type === "heading") {
+              const heading = document.createElement("h3");
+              heading.className = "connpass-summary__heading";
+              if (order === 0) {
+                heading.style.marginTop = "0";
+              }
+              heading.textContent = block.text;
+              container.appendChild(heading);
+              return;
+            }
+
+            if (block.type === "paragraph") {
+              const paragraph = document.createElement("p");
+              paragraph.textContent = block.text;
+              container.appendChild(paragraph);
+              return;
+            }
+
+            if (block.type === "list") {
+              const list = document.createElement("ul");
+              list.className = "connpass-summary__list";
+              block.items.forEach((item) => {
+                const li = document.createElement("li");
+                li.textContent = item;
+                list.appendChild(li);
+              });
+              container.appendChild(list);
+              return;
+            }
+
+            if (block.type === "link") {
+              const linkParagraph = document.createElement("p");
+              linkParagraph.appendChild(createExternalLink(block.href, block.label ?? block.href));
+              container.appendChild(linkParagraph);
+              return;
+            }
+
+            if (block.type === "note") {
+              const note = document.createElement("p");
+              note.className = "connpass-note";
+              note.textContent = block.text;
+              container.appendChild(note);
+              return;
+            }
+
+            if (block.type === "schedule") {
+              const table = document.createElement("table");
+              table.className = "connpass-schedule-table";
+
+              const headers = Array.isArray(block.headers) && block.headers.length > 0
+                ? block.headers
+                : ["時間", "内容"];
+
+              const headerLabels = headers.slice(0, 2);
+              while (headerLabels.length < 2) {
+                headerLabels.push(headerLabels.length === 0 ? "時間" : "内容");
+              }
+
+              if (headerLabels.length > 0) {
+                const thead = document.createElement("thead");
+                const headerRow = document.createElement("tr");
+                headerLabels.forEach((label, columnIndex) => {
+                  const th = document.createElement("th");
+                  if (columnIndex === 0) {
+                    th.className = "connpass-schedule-table__time";
+                  }
+                  th.textContent = label;
+                  headerRow.appendChild(th);
+                });
+                thead.appendChild(headerRow);
+                table.appendChild(thead);
+              }
+
+              const tbody = document.createElement("tbody");
+
+              block.entries.forEach((entry) => {
+                const row = document.createElement("tr");
+
+                const timeCell = document.createElement("th");
+                timeCell.scope = "row";
+                timeCell.className = "connpass-schedule-table__time";
+                timeCell.textContent = entry.time;
+                row.appendChild(timeCell);
+
+                const detailCell = document.createElement("td");
+                detailCell.className = "connpass-schedule-table__content";
+
+                if (entry.description) {
+                  const description = document.createElement("div");
+                  description.className = "connpass-schedule__description";
+                  description.textContent = entry.description;
+                  detailCell.appendChild(description);
+                }
+
+                const detailItems = entry.details ?? [];
+                const listItems = detailItems.filter((item) => !isNoteLine(item));
+                const noteItems = detailItems.filter((item) => isNoteLine(item));
+
+                if (listItems.length > 0) {
+                  const detailList = document.createElement("ul");
+                  detailList.className = "connpass-summary__list connpass-summary__list--compact";
+                  listItems.forEach((item) => {
+                    const li = document.createElement("li");
+                    li.textContent = item;
+                    detailList.appendChild(li);
+                  });
+                  detailCell.appendChild(detailList);
+                }
+
+                if (noteItems.length > 0) {
+                  const notes = document.createElement("div");
+                  notes.className = "connpass-schedule__notes";
+                  noteItems.forEach((item) => {
+                    const note = document.createElement("p");
+                    note.className = "connpass-note";
+                    note.textContent = item;
+                    notes.appendChild(note);
+                  });
+                  detailCell.appendChild(notes);
+                }
+
+                row.appendChild(detailCell);
+                tbody.appendChild(row);
+              });
+
+              table.appendChild(tbody);
+              container.appendChild(table);
+            }
+          });
+
+          target.appendChild(container);
+        }
+
+        function eventFallbackLabel(event) {
+          if (event.hashTag) {
+            return `#${String(event.hashTag).replace(/^#/, "")}`;
+          }
+          if (event.group?.title) {
+            return event.group.title;
+          }
+          if (event.owner?.displayName) {
+            return event.owner.displayName;
+          }
+          if (event.owner?.nickname) {
+            return event.owner.nickname;
+          }
+          return "Connpass";
+        }
+
+        function openExternal(url) {
+          if (!url) return;
+          try {
+            if (window.openai?.openExternal) {
+              window.openai.openExternal({ href: url });
+            } else {
+              window.open(url, "_blank", "noopener,noreferrer");
+            }
+          } catch (error) {
+            console.warn("Failed to open external URL", error);
+          }
+        }
+
+        async function setWidgetState(next) {
+          state.widgetState = normaliseWidgetState(next);
+          if (window.openai?.setWidgetState) {
+            try {
+              await window.openai.setWidgetState(state.widgetState);
+            } catch (error) {
+              console.warn("Failed to persist widget state", error);
+            }
+          }
+        }
+
+        async function enterFullscreen(eventId) {
+          await setWidgetState({ selectedEventId: eventId });
+          if (window.openai?.requestDisplayMode) {
+            try {
+              await window.openai.requestDisplayMode({ mode: "fullscreen" });
+            } catch (error) {
+              console.warn("Failed to request fullscreen", error);
+            }
+          }
+          render();
+        }
+
+        async function exitFullscreen() {
+          await setWidgetState({ selectedEventId: null });
+          if (window.openai?.requestDisplayMode) {
+            try {
+              await window.openai.requestDisplayMode({ mode: "inline" });
+            } catch (error) {
+              console.warn("Failed to exit fullscreen", error);
+            }
+          }
+          render();
+        }
+
+        function createIcon(pathD) {
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 24 24");
+          svg.setAttribute("fill", "none");
+          svg.setAttribute("stroke", "currentColor");
+          svg.setAttribute("stroke-width", "1.6");
+          svg.setAttribute("stroke-linecap", "round");
+          svg.setAttribute("stroke-linejoin", "round");
+          svg.setAttribute("aria-hidden", "true");
+          svg.classList.add("connpass-icon");
+          const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+          path.setAttribute("d", pathD);
+          svg.appendChild(path);
+          return svg;
+        }
+
+        function renderCarousel(root, events) {
+          const wrapper = document.createElement("div");
+          wrapper.className = "connpass-carousel";
+
+          const scroller = document.createElement("div");
+          scroller.className = "connpass-carousel__scroller";
+          wrapper.appendChild(scroller);
+
+          events.forEach((event) => {
+            const card = document.createElement("article");
+            card.className = "connpass-card";
+
+            if (event.imageUrl) {
+              const media = document.createElement("figure");
+              media.className = "connpass-card__media";
+              const img = document.createElement("img");
+              img.src = event.imageUrl;
+              img.alt = `${event.title ?? "Connpass イベント"}の画像`;
+              img.loading = "lazy";
+              media.appendChild(img);
+              card.appendChild(media);
+            } else {
+              const media = document.createElement("div");
+              media.className = "connpass-card__media connpass-card__media--fallback";
+              const label = document.createElement("span");
+              label.className = "connpass-card__media-fallback-label";
+              label.textContent = eventFallbackLabel(event);
+              media.appendChild(label);
+              card.appendChild(media);
+            }
+
+            const header = document.createElement("div");
+            header.className = "connpass-card__content";
+
+            const title = document.createElement("h2");
+            title.className = "connpass-card__title";
+            title.textContent = event.title ?? "タイトル未設定";
+            header.appendChild(title);
+
+            const badge = document.createElement("span");
+            badge.className = "connpass-badge";
+            badge.appendChild(createIcon(PARTICIPANTS_ICON_PATH));
+            const badgeLabel = document.createElement("span");
+            badgeLabel.textContent = `${participantsLabel(event.participants)} 人`;
+            badge.appendChild(badgeLabel);
+            header.appendChild(badge);
+
+            const dateRow = document.createElement("div");
+            dateRow.className = "connpass-row";
+            dateRow.appendChild(
+              createIcon("M8 2v4m8-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z")
+            );
+            const dateLabel = document.createElement("div");
+            dateLabel.className = "connpass-row__label";
+            dateLabel.textContent = formatDateRange(event);
+            dateRow.appendChild(dateLabel);
+            header.appendChild(dateRow);
+
+            if (event.location?.place) {
+              const locRow = document.createElement("div");
+              locRow.className = "connpass-row";
+              locRow.appendChild(
+                createIcon("M12 21c-4.2-3.4-7-7.3-7-11a7 7 0 1 1 14 0c0 3.7-2.8 7.6-7 11zm0-9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z")
+              );
+              const locLabel = document.createElement("div");
+              locLabel.className = "connpass-row__label";
+              locLabel.textContent = event.location.place;
+              if (event.location.address) {
+                const sub = document.createElement("span");
+                sub.className = "connpass-text-sub";
+                sub.textContent = event.location.address;
+                locLabel.appendChild(sub);
+              }
+              locRow.appendChild(locLabel);
+              header.appendChild(locRow);
+            }
+
+            if (event.catchPhrase) {
+              const catchPhrase = document.createElement("p");
+              catchPhrase.className = "connpass-card__catchphrase";
+              catchPhrase.textContent = event.catchPhrase;
+              header.appendChild(catchPhrase);
+            }
+
+            if (event.hashTag) {
+              const tag = document.createElement("span");
+              tag.className = "connpass-tag";
+              tag.textContent = `#${String(event.hashTag).replace(/^#/, "")}`;
+              header.appendChild(tag);
+            }
+
+            card.appendChild(header);
+
+            const footer = document.createElement("div");
+            footer.className = "connpass-card__footer";
+
+            const detailBtn = document.createElement("button");
+            detailBtn.type = "button";
+            detailBtn.className = "connpass-btn-primary";
+            detailBtn.innerHTML =
+              '<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M21 3 14 10"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg><span>詳細を見る</span>';
+            detailBtn.addEventListener("click", () => enterFullscreen(event.id));
+            footer.appendChild(detailBtn);
+
+            const linkBtn = document.createElement("button");
+            linkBtn.type = "button";
+            linkBtn.className = "connpass-btn-link";
+            linkBtn.innerHTML =
+              '<span>Connpass</span><svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 6"/><path d="M21 3h-6v6"/></svg>';
+            linkBtn.addEventListener("click", () => openExternal(event.url));
+            footer.appendChild(linkBtn);
+
+            card.appendChild(footer);
+            scroller.appendChild(card);
+          });
+
+          const prevBtn = document.createElement("button");
+          prevBtn.type = "button";
+          prevBtn.className = "connpass-carousel__nav connpass-carousel__nav--prev";
+          prevBtn.innerHTML =
+            '<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg>';
+          prevBtn.addEventListener("click", () => {
+            scroller.scrollBy({ left: -280, behavior: "smooth" });
+          });
+
+          const nextBtn = document.createElement("button");
+          nextBtn.type = "button";
+          nextBtn.className = "connpass-carousel__nav connpass-carousel__nav--next";
+          nextBtn.innerHTML =
+            '<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>';
+          nextBtn.addEventListener("click", () => {
+            scroller.scrollBy({ left: 280, behavior: "smooth" });
+          });
+
+          function updateNavButtons() {
+            const maxScroll = scroller.scrollWidth - scroller.clientWidth - 1;
+            prevBtn.disabled = scroller.scrollLeft <= 0;
+            nextBtn.disabled = scroller.scrollLeft >= maxScroll;
+          }
+
+          scroller.addEventListener("scroll", () => requestAnimationFrame(updateNavButtons));
+          window.addEventListener("resize", updateNavButtons, { passive: true });
+
+          updateNavButtons();
+
+          wrapper.appendChild(prevBtn);
+          wrapper.appendChild(nextBtn);
+          root.appendChild(wrapper);
+        }
+
+        function renderPresentations(section, presentations) {
+          const list = document.createElement("div");
+          list.className = "connpass-presentations";
+          presentations.forEach((presentation) => {
+            const item = document.createElement("article");
+            item.className = "connpass-presentation";
+
+            const header = document.createElement("div");
+            header.className = "connpass-presentation__header";
+            const title = document.createElement("p");
+            title.style.margin = "0";
+            title.style.fontWeight = "650";
+            title.style.fontSize = "15px";
+            title.textContent = presentation.title ?? "発表";
+            header.appendChild(title);
+
+            const order = document.createElement("span");
+            order.className = "connpass-pill-button";
+            order.textContent = `#${presentation.order ?? ""}`;
+            header.appendChild(order);
+            item.appendChild(header);
+
+            if (presentation.speaker) {
+              const speaker = document.createElement("p");
+              speaker.className = "connpass-text-sub";
+              speaker.style.marginTop = "6px";
+              speaker.textContent = presentation.speaker;
+              item.appendChild(speaker);
+            }
+
+            if (presentation.summary) {
+              const summary = document.createElement("p");
+              summary.style.marginTop = "10px";
+              summary.textContent = presentation.summary;
+              item.appendChild(summary);
+            }
+
+            const links = presentation.links ?? {};
+            const usableLinks = Object.entries(links).filter(([, href]) => Boolean(href));
+            if (usableLinks.length > 0) {
+              const linkWrap = document.createElement("div");
+              linkWrap.className = "connpass-presentation__links";
+              usableLinks.forEach(([key, href]) => {
+                const btn = document.createElement("button");
+                btn.type = "button";
+                btn.className = "connpass-link-pill";
+                btn.innerHTML = `${key}<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 6"/><path d="M21 3h-6v6"/></svg>`;
+                btn.addEventListener("click", () => openExternal(String(href)));
+                linkWrap.appendChild(btn);
+              });
+              item.appendChild(linkWrap);
+            }
+
+            list.appendChild(item);
+          });
+          section.appendChild(list);
+        }
+
+        function renderMetaRow(path, label, subLabel) {
+          const row = document.createElement("div");
+          row.className = "connpass-row";
+          row.appendChild(createIcon(path));
+          const wrap = document.createElement("div");
+          wrap.className = "connpass-row__label";
+          wrap.textContent = label;
+          if (subLabel) {
+            const sub = document.createElement("div");
+            sub.className = "connpass-text-sub";
+            sub.textContent = subLabel;
+            wrap.appendChild(sub);
+          }
+          row.appendChild(wrap);
+          return row;
+        }
+
+        function createAgendaCard(event) {
+          const card = document.createElement("article");
+          card.className = "connpass-list-card";
+
+          const header = document.createElement("div");
+          header.className = "connpass-list-card__header";
+
+          const media = document.createElement("div");
+          media.className = "connpass-list-card__header-media";
+          if (event.owner?.imageUrl) {
+            const img = document.createElement("img");
+            img.src = event.owner.imageUrl;
+            img.alt = `${event.owner.displayName || event.owner.nickname || "主催者"}の画像`;
+            img.loading = "lazy";
+            media.appendChild(img);
+          } else if (event.imageUrl) {
+            const img = document.createElement("img");
+            img.src = event.imageUrl;
+            img.alt = `${event.title ?? "Connpass イベント"}の画像`;
+            img.loading = "lazy";
+            media.appendChild(img);
+          } else {
+            const fallback = document.createElement("span");
+            fallback.className = "connpass-list-card__media-fallback";
+            fallback.textContent = eventFallbackLabel(event);
+            media.appendChild(fallback);
+          }
+          header.appendChild(media);
+
+          const headerText = document.createElement("div");
+          headerText.className = "connpass-list-card__header-text";
+
+          const title = document.createElement("h3");
+          title.className = "connpass-list-card__title";
+          title.textContent = event.title ?? "タイトル未設定";
+          headerText.appendChild(title);
+
+          const owner = document.createElement("div");
+          owner.className = "connpass-list-card__owner";
+          owner.textContent = event.owner?.displayName || event.owner?.nickname || "主催者";
+          headerText.appendChild(owner);
+
+          header.appendChild(headerText);
+          card.appendChild(header);
+
+          const body = document.createElement("div");
+          body.className = "connpass-list-card__body";
+
+          if (event.catchPhrase) {
+            const catchLine = document.createElement("p");
+            catchLine.className = "connpass-list-card__catchphrase";
+            catchLine.textContent = event.catchPhrase;
+            body.appendChild(catchLine);
+          } else if (event.summary) {
+            const summary = document.createElement("p");
+            summary.className = "connpass-list-card__catchphrase";
+            summary.textContent = event.summary;
+            body.appendChild(summary);
+          }
+
+          const metaWrap = document.createElement("div");
+          metaWrap.className = "connpass-list-card__meta";
+          metaWrap.appendChild(
+            renderMetaRow(
+              "M8 2v4m8-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z",
+              formatDateRange(event)
+            )
+          );
+
+          if (event.location?.place) {
+            metaWrap.appendChild(
+              renderMetaRow(
+                "M12 21c-4.2-3.4-7-7.3-7-11a7 7 0 1 1 14 0c0 3.7-2.8 7.6-7 11zm0-9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+                event.location.place,
+                event.location.address
+              )
+            );
+          }
+
+          metaWrap.appendChild(
+            renderMetaRow(
+              PARTICIPANTS_ICON_PATH,
+              `${participantsLabel(event.participants)} 人`
+            )
+          );
+
+          body.appendChild(metaWrap);
+
+          if (event.hashTag) {
+            const tag = document.createElement("span");
+            tag.className = "connpass-tag";
+            tag.textContent = `#${String(event.hashTag).replace(/^#/, "")}`;
+            body.appendChild(tag);
+          } else if (event.group?.title) {
+            const tag = document.createElement("span");
+            tag.className = "connpass-tag";
+            tag.textContent = event.group.title;
+            body.appendChild(tag);
+          }
+
+          const actions = document.createElement("div");
+          actions.className = "connpass-list-card__actions";
+
+          const detailBtn = document.createElement("button");
+          detailBtn.type = "button";
+          detailBtn.className = "connpass-btn-primary";
+          detailBtn.innerHTML =
+            '<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M21 3 14 10"/><path d="M9 21H3v-6"/><path d="m3 21 7-7"/></svg><span>詳細を見る</span>';
+          detailBtn.addEventListener("click", () => enterFullscreen(event.id));
+          actions.appendChild(detailBtn);
+
+          if (event.url) {
+            const linkBtn = document.createElement("button");
+            linkBtn.type = "button";
+            linkBtn.className = "connpass-btn-link";
+            linkBtn.innerHTML =
+              '<span>Connpass</span><svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 6"/><path d="M21 3h-6v6"/></svg>';
+            linkBtn.addEventListener("click", () => openExternal(event.url));
+            actions.appendChild(linkBtn);
+          }
+
+          body.appendChild(actions);
+          card.appendChild(body);
+
+          return card;
+        }
+
+        function renderAgenda(root, normalised) {
+          const container = document.createElement("div");
+          container.className = "connpass-agenda";
+
+          const chipLabels = [];
+          if (normalised.userId != null) {
+            chipLabels.push(`ユーザーID ${normalised.userId}`);
+          }
+          const meta = normalised.metadata ?? {};
+          if (typeof meta.daysAhead === "number" && Number.isFinite(meta.daysAhead)) {
+            chipLabels.push(`表示期間 ${meta.daysAhead}日`);
+          }
+          if (typeof meta.limit === "number" && Number.isFinite(meta.limit)) {
+            chipLabels.push(`チェック上限 ${meta.limit}件`);
+          }
+          if (typeof meta.includePresentations === "boolean") {
+            chipLabels.push(meta.includePresentations ? "発表情報あり" : "発表情報なし");
+          }
+
+          if (chipLabels.length > 0) {
+            const chipLine = document.createElement("div");
+            chipLine.className = "connpass-agenda__chips";
+            chipLabels.forEach((label) => {
+              const chip = document.createElement("span");
+              chip.className = "connpass-chip";
+              chip.textContent = label;
+              chipLine.appendChild(chip);
+            });
+            container.appendChild(chipLine);
+          }
+
+          normalised.sections.forEach((section) => {
+            const sectionEl = document.createElement("section");
+            sectionEl.className = "connpass-agenda__section";
+
+            const header = document.createElement("header");
+            header.className = "connpass-agenda__section-header";
+            const heading = document.createElement("h2");
+            heading.className = "connpass-agenda__section-title";
+            heading.textContent = section.title;
+            header.appendChild(heading);
+            if (section.subtitle) {
+              const subtitle = document.createElement("p");
+              subtitle.className = "connpass-agenda__section-subtitle";
+              subtitle.textContent = section.subtitle;
+              header.appendChild(subtitle);
+            }
+            sectionEl.appendChild(header);
+
+            if (!section.events.length) {
+              const empty = document.createElement("div");
+              empty.className = "connpass-agenda__empty";
+              empty.textContent = section.emptyText ?? "イベントが見つかりません。";
+              sectionEl.appendChild(empty);
+              container.appendChild(sectionEl);
+              return;
+            }
+
+            const list = document.createElement("div");
+            list.className = "connpass-agenda__list";
+            section.events.forEach((event) => {
+              list.appendChild(createAgendaCard(event));
+            });
+            sectionEl.appendChild(list);
+            container.appendChild(sectionEl);
+          });
+
+          const metaLineItems = [];
+          if (typeof meta.inspected === "number" && Number.isFinite(meta.inspected)) {
+            if (typeof meta.limit === "number" && Number.isFinite(meta.limit)) {
+              metaLineItems.push(`取得対象 ${meta.inspected}/${meta.limit}件`);
+            } else {
+              metaLineItems.push(`取得対象 ${meta.inspected}件`);
+            }
+          }
+
+          if (metaLineItems.length > 0) {
+            const metaLine = document.createElement("div");
+            metaLine.className = "connpass-agenda__meta";
+            metaLine.textContent = metaLineItems.join(" ・ ");
+            container.appendChild(metaLine);
+          }
+
+          root.appendChild(container);
+        }
+
+        function renderInline(root, normalised) {
+          if (normalised.variant === "agenda") {
+            renderAgenda(root, normalised);
+            return;
+          }
+          renderCarousel(root, normalised.events);
+        }
+
+        function renderFullscreen(root, event) {
+          const container = document.createElement("div");
+          container.className = "connpass-fullscreen";
+
+          if (event.imageUrl) {
+            const hero = document.createElement("figure");
+            hero.className = "connpass-hero";
+            const img = document.createElement("img");
+            img.src = event.imageUrl;
+            img.alt = `${event.title ?? "Connpass イベント"}の画像`;
+            hero.appendChild(img);
+
+            const heroBadge = document.createElement("span");
+            heroBadge.className = "connpass-hero__badge";
+            heroBadge.innerHTML =
+              '<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>';
+            const heroBadgeText = document.createElement("span");
+            heroBadgeText.textContent = `${participantsLabel(event.participants)} 人`;
+            heroBadge.appendChild(heroBadgeText);
+            hero.appendChild(heroBadge);
+
+            container.appendChild(hero);
+          } else {
+            const hero = document.createElement("div");
+            hero.className = "connpass-hero connpass-hero--fallback";
+            const heroLabel = document.createElement("span");
+            heroLabel.className = "connpass-hero__label";
+            heroLabel.textContent = eventFallbackLabel(event);
+            hero.appendChild(heroLabel);
+            const heroBadge = document.createElement("span");
+            heroBadge.className = "connpass-hero__badge";
+            heroBadge.innerHTML =
+              '<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/></svg>';
+            const heroBadgeText = document.createElement("span");
+            heroBadgeText.textContent = `${participantsLabel(event.participants)} 人`;
+            heroBadge.appendChild(heroBadgeText);
+            hero.appendChild(heroBadge);
+            container.appendChild(hero);
+          }
+
+          const header = document.createElement("header");
+          header.className = "connpass-fullscreen__header";
+          const titleWrap = document.createElement("div");
+          titleWrap.className = "connpass-fullscreen__header-main";
+          const label = document.createElement("p");
+          label.className = "connpass-text-sub";
+          label.textContent = "Connpass イベント";
+          titleWrap.appendChild(label);
+          const title = document.createElement("h1");
+          title.textContent = event.title ?? "Connpass イベント";
+          title.style.margin = "6px 0 0";
+          title.style.fontSize = "26px";
+          title.style.lineHeight = "1.2";
+          title.style.fontWeight = "700";
+          titleWrap.appendChild(title);
+          header.appendChild(titleWrap);
+
+          const closeBtn = document.createElement("button");
+          closeBtn.type = "button";
+          closeBtn.className = "connpass-pill-button connpass-pill-button--ghost";
+          closeBtn.innerHTML =
+            '<svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m18 6-12 12"/><path d="m6 6 12 12"/></svg><span>閉じる</span>';
+          closeBtn.addEventListener("click", exitFullscreen);
+          header.appendChild(closeBtn);
+          container.appendChild(header);
+
+          const body = document.createElement("div");
+          body.className = "connpass-fullscreen__body";
+
+          const schedule = document.createElement("section");
+          const meta = document.createElement("div");
+          meta.className = "connpass-meta";
+          meta.appendChild(renderMetaRow("M8 2v4m8-4v4M3 9h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z", formatDateRange(event)));
+          meta.appendChild(
+            renderMetaRow(
+              "M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m7-14a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+              `参加者 ${participantsLabel(event.participants)} 人`
+            )
+          );
+          if (event.location?.place) {
+            meta.appendChild(
+              renderMetaRow(
+                "M12 21c-4.2-3.4-7-7.3-7-11a7 7 0 1 1 14 0c0 3.7-2.8 7.6-7 11zm0-9a2 2 0 1 0 0-4 2 2 0 0 0 0 4z",
+                event.location.place,
+                event.location.address
+              )
+            );
+          }
+          schedule.appendChild(meta);
+          body.appendChild(schedule);
+
+          const infoSection = document.createElement("section");
+          infoSection.className = "connpass-detail";
+          const infoHeading = document.createElement("h2");
+          infoHeading.textContent = "主催・関連";
+          infoSection.appendChild(infoHeading);
+
+          const infoGrid = document.createElement("div");
+          infoGrid.className = "connpass-detail-grid";
+
+          if (event.owner) {
+            const ownerLabel = event.owner.displayName || event.owner.nickname;
+            const ownerRow = renderMetaRow(
+              "M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2m8-10a4 4 0 1 0 0-8 4 4 0 0 0 0 8z",
+              `主催 ${ownerLabel}`,
+              event.owner.displayName && event.owner.nickname && event.owner.displayName !== event.owner.nickname
+                ? `@${event.owner.nickname}`
+                : undefined
+            );
+            infoGrid.appendChild(ownerRow);
+          }
+
+          if (event.group?.title) {
+            const groupRow = renderMetaRow(
+              "M4 4h6l2 2h8v14H4z",
+              `グループ ${event.group.title}`,
+              event.group.url ? "Connpass グループページ" : undefined
+            );
+            if (event.group?.url) {
+              const buttonWrap = document.createElement("div");
+              buttonWrap.style.marginTop = "6px";
+              buttonWrap.style.display = "flex";
+              buttonWrap.style.gap = "8px";
+              const groupBtn = document.createElement("button");
+              groupBtn.type = "button";
+              groupBtn.className = "connpass-btn-link";
+              groupBtn.innerHTML =
+                '<span>グループを見る</span><svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 6"/><path d="M21 3h-6v6"/></svg>';
+              groupBtn.addEventListener("click", () => openExternal(event.group.url));
+              buttonWrap.appendChild(groupBtn);
+              const labelWrap = groupRow.querySelector(".connpass-row__label");
+              if (labelWrap) {
+                labelWrap.appendChild(buttonWrap);
+              } else {
+                groupRow.appendChild(buttonWrap);
+              }
+            }
+            infoGrid.appendChild(groupRow);
+          }
+
+          if (event.hashTag) {
+            const tagRow = renderMetaRow(
+              "M4 9h16M4 15h16M10 3 8 21M16 3l-2 18",
+              `ハッシュタグ #${String(event.hashTag).replace(/^#/, "")}`
+            );
+            infoGrid.appendChild(tagRow);
+          }
+
+          if (infoGrid.childElementCount > 0) {
+            infoSection.appendChild(infoGrid);
+            body.appendChild(infoSection);
+          }
+
+          if (event.catchPhrase) {
+            const section = document.createElement("section");
+            const heading = document.createElement("h2");
+            heading.textContent = "キャッチコピー";
+            section.appendChild(heading);
+            const paragraph = document.createElement("p");
+            paragraph.textContent = event.catchPhrase;
+            section.appendChild(paragraph);
+            body.appendChild(section);
+          }
+
+          if (event.summary) {
+            const section = document.createElement("section");
+            const heading = document.createElement("h2");
+            heading.textContent = "概要";
+            section.appendChild(heading);
+            renderSummaryContent(section, event.summary);
+            body.appendChild(section);
+          }
+
+          if (Array.isArray(event.presentations) && event.presentations.length > 0) {
+            const section = document.createElement("section");
+            const heading = document.createElement("h2");
+            heading.textContent = "発表";
+            section.appendChild(heading);
+            renderPresentations(section, event.presentations);
+            body.appendChild(section);
+          }
+
+          container.appendChild(body);
+
+          const footer = document.createElement("footer");
+          footer.className = "connpass-fullscreen__footer";
+          const owner = document.createElement("div");
+          owner.className = "connpass-text-sub";
+          const ownerName = event.owner?.displayName ?? event.owner?.nickname ?? "主催者";
+          const ownerLabel = document.createElement("span");
+          ownerLabel.textContent = "主催: ";
+          owner.appendChild(ownerLabel);
+          const ownerStrong = document.createElement("strong");
+          ownerStrong.textContent = ownerName;
+          ownerStrong.style.color = "var(--connpass-text-primary)";
+          ownerStrong.style.fontWeight = "650";
+          owner.appendChild(ownerStrong);
+          if (event.group?.title) {
+            const groupSpan = document.createElement("span");
+            groupSpan.textContent = `（${event.group.title}）`;
+            owner.appendChild(groupSpan);
+          }
+          footer.appendChild(owner);
+
+          const actions = document.createElement("div");
+          actions.style.display = "flex";
+          actions.style.gap = "12px";
+
+          const connpassBtn = document.createElement("button");
+          connpassBtn.type = "button";
+          connpassBtn.className = "connpass-btn-primary";
+          connpassBtn.innerHTML =
+            '<span>Connpass でイベントを見る</span><svg class="connpass-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><path d="m15 3 6 6"/><path d="M21 3h-6v6"/></svg>';
+          connpassBtn.addEventListener("click", () => openExternal(event.url));
+          actions.appendChild(connpassBtn);
+
+          footer.appendChild(actions);
+          container.appendChild(footer);
+
+          root.appendChild(container);
+          container.scrollTop = 0;
+        }
+
+        function render() {
+          const root = document.getElementById("connpass-events-root");
+          if (!root) return;
+          root.innerHTML = "";
+
+          const normalised = normaliseToolOutput();
+          const events = normalised.events;
+          const hasSearched = Boolean(state.toolOutput);
+
+          if (normalised.variant !== "agenda" && events.length === 0) {
+            const empty = document.createElement("div");
+            empty.className = "connpass-empty";
+            if (!hasSearched) {
+              empty.setAttribute("aria-busy", "true");
+              const message = document.createElement("span");
+              message.textContent = "Connpassイベントを探しています";
+              empty.appendChild(message);
+              const dots = document.createElement("span");
+              dots.className = "connpass-dots";
+              dots.innerHTML = "<span></span><span></span><span></span>";
+              empty.appendChild(dots);
+            } else {
+              const returned = Number(normalised.returned ?? 0);
+              empty.textContent =
+                returned === 0
+                  ? "イベントが見つかりませんでした。条件を調整して再検索してください。"
+                  : "条件に一致するイベントがありません。別のキーワードをお試しください。";
+            }
+            root.appendChild(empty);
+            updateBodyScrollLock(false);
+            return;
+          }
+
+          if (normalised.variant === "agenda" && normalised.sections.length === 0 && hasSearched) {
+            const empty = document.createElement("div");
+            empty.className = "connpass-empty";
+            empty.textContent = "表示できるイベントがありません。Connpassの予定を確認してください。";
+            root.appendChild(empty);
+            updateBodyScrollLock(false);
+            return;
+          }
+
+          const selectedId = state.widgetState?.selectedEventId ?? null;
+          const selectedEvent = events.find((event) => event.id === selectedId) ?? null;
+
+          updateBodyScrollLock(state.displayMode === "fullscreen" && Boolean(selectedEvent));
+
+          if (state.displayMode === "fullscreen" && selectedEvent) {
+            renderFullscreen(root, selectedEvent);
+            return;
+          }
+
+          renderInline(root, normalised);
+          updateBodyScrollLock(false);
+        }
+
+        window.addEventListener(
+          "openai:set_globals",
+          (event) => {
+            const globals = event.detail?.globals ?? {};
+            if (Object.prototype.hasOwnProperty.call(globals, "toolOutput")) {
+              state.toolOutput = globals.toolOutput;
+            }
+            if (Object.prototype.hasOwnProperty.call(globals, "displayMode")) {
+              state.displayMode = globals.displayMode ?? "inline";
+            }
+            if (Object.prototype.hasOwnProperty.call(globals, "widgetState")) {
+              state.widgetState = normaliseWidgetState(globals.widgetState);
+            }
+            render();
+          },
+          { passive: true }
+        );
+
+        render();
+      })();
+    </script>
+  </body>
+</html>
