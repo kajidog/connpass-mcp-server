@@ -26,6 +26,58 @@ Connpass MCP Server は、MCP (Model Context Protocol) 経由で Connpass API �
 
 必要に応じて、デフォルトで参照するユーザー ID を `CONNPASS_DEFAULT_USER_ID` に設定できます。`get_my_upcoming_events` ツールで `userId` を省略した場合に利用されます。
 
+## トランスポート方式
+
+Connpass MCP Server は2つのトランスポート方式に対応しています。
+
+### HTTP (Streamable HTTP) - デフォルト
+
+デフォルトのトランスポート方式です。HTTPリクエスト/レスポンスベースで通信します。
+
+```bash
+# デフォルトで HTTP トランスポートを使用 (ポート 3000)
+connpass-mcp-server
+
+# ポートを指定
+connpass-mcp-server --port 8080
+connpass-mcp-server -p 8080
+
+# 明示的に HTTP トランスポートを指定
+connpass-mcp-server --transport http
+connpass-mcp-server -t http
+```
+
+### SSE (Server-Sent Events)
+
+Server-Sent Events を使用した双方向通信です。
+
+```bash
+# SSE トランスポートを使用
+connpass-mcp-server --transport sse
+
+# ポートを指定
+connpass-mcp-server --transport sse --port 8080
+connpass-mcp-server -t sse -p 8080
+```
+
+### コマンドラインオプション
+
+```
+Usage: connpass-mcp-server [options]
+
+Options:
+  -t, --transport <type>  Transport type: http or sse (default: http)
+  -p, --port <number>     Port number for http/sse transports (default: 3000)
+  -h, --help             Show this help message
+
+Examples:
+  connpass-mcp-server                           # Start with HTTP transport on port 3000
+  connpass-mcp-server --transport sse --port 8080  # Start with SSE transport on port 8080
+  connpass-mcp-server -t http -p 5000          # Start with HTTP transport on port 5000
+```
+
+> **注意:** `PORT` および `MCP_TRANSPORT` 環境変数を設定することでも、ポートやトランスポート方式を変更できます。コマンドライン引数よりも環境変数が優先されます。
+
 ### 環境変数一覧
 
 | 変数名 | 説明 | 既定値 |
@@ -37,7 +89,9 @@ Connpass MCP Server は、MCP (Model Context Protocol) 経由で Connpass API �
 | `CONNPASS_PRESENTATION_CACHE_TTL_MS` | キャッシュ保持期間（ミリ秒）。 | `3600000` |
 | `CONNPASS_PRESENTATION_CACHE_PATH` | キャッシュファイルの保存先パス。 | `./data/presentation-cache.json` |
 | `CONNPASS_ENABLE_APPS_SDK_OUTPUT` | Apps SDK 互換の `structuredContent` をツール応答に含めるかどうか。`true/false` や `1/0` などで指定。 | `false` |
-| `MCP_BASE_PATH` | MCP エンドポイントのベースパス。リバースプロキシで `/mcp` を `/` に転送する場合などに `/` を指定。 | `/mcp` |
+| `MCP_BASE_PATH` | MCP エンドポイントのベースパス。リバースプロキシで `/mcp` を `/` に転送する場合などに `/` を指定。(SSE トランスポートのみ) | `/mcp` |
+| `MCP_TRANSPORT` | トランスポート方式 (`http`, `sse`)。コマンドライン引数より優先されます。 | 未設定 |
+| `PORT` | サーバーのポート番号 (http, sse トランスポートのみ)。コマンドライン引数より優先されます。 | `3000` |
 
 ## ツール一覧
 

@@ -54,6 +54,39 @@ docker-compose logs -f
 
 サーバーは `http://localhost:3000` で起動します。
 
+### トランスポート方式と接続URL
+
+MCP サーバーは以下の2つのトランスポート方式に対応しています。
+
+#### HTTP (Streamable HTTP) - デフォルト
+
+```bash
+# デフォルトで HTTP トランスポートで起動
+pnpm --filter @kajidog/connpass-mcp-server start
+
+# ポート指定
+pnpm --filter @kajidog/connpass-mcp-server start -- --port 8080
+```
+
+- **接続URL**: `http://localhost:3000` (デフォルト)
+- MCPクライアントから `POST http://localhost:3000` でリクエストを送信します
+
+#### SSE (Server-Sent Events)
+
+```bash
+# SSE トランスポートで起動
+pnpm --filter @kajidog/connpass-mcp-server start -- --transport sse
+
+# ポート指定
+pnpm --filter @kajidog/connpass-mcp-server start -- --transport sse --port 8080
+```
+
+- **接続URL**: `http://localhost:3000/mcp` (デフォルト)
+- SSE ストリーム: `GET http://localhost:3000/mcp`
+- メッセージ送信: `POST http://localhost:3000/mcp/messages?sessionId=...`
+
+詳細は [packages/mcp-server/README.md](packages/mcp-server/README.md) のトランスポート方式セクションを参照してください。
+
 ### 通常インストール
 
 ```bash

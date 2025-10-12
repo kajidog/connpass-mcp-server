@@ -11,6 +11,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { ConnpassClient } from "@kajidog/connpass-api-client";
 import { startSseServer } from "./transports/sse.js";
+import { startHttpServer } from "./transports/http.js";
 import { tools, handleToolCall } from "./tools/index.js";
 import { buildCallToolResult } from "./apps-sdk.js";
 import { getMcpBasePath, isAppsSdkOutputEnabled } from "./config.js";
@@ -101,24 +102,108 @@ function createConnpassServer() {
   return server;
 }
 
-async function main() {
-  const transport = process.env.MCP_TRANSPORT?.toLowerCase() ?? "sse";
+function parseArgs() {
+  const args = process.argv.slice(2);
+  let transport = "http"; // Default transport
+  let port = 3000;
 
-  if (transport !== "sse") {
-    throw new Error(`Unsupported MCP transport: ${transport}`);
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+
+    if (arg === "--transport" || arg === "-t") {
+      const value = args[i + 1];
+      if (value && !value.startsWith("-")) {
+        transport = value.toLowerCase();
+        i++;
+      }
+    } else if (arg === "--port" || arg === "-p") {
+      const value = args[i + 1];
+      if (value && !value.startsWith("-")) {
+        const parsed = Number.parseInt(value, 10);
+        if (Number.isFinite(parsed)) {
+          port = parsed;
+        }
+        i++;
+      }
+    } else if (arg.startsWith("--transport=")) {
+      transport = arg.split("=")[1].toLowerCase();
+    } else if (arg.startsWith("--port=")) {
+      const parsed = Number.parseInt(arg.split("=")[1], 10);
+      if (Number.isFinite(parsed)) {
+        port = parsed;
+      }
+    } else if (arg === "--help" || arg === "-h") {
+      console.log(`
+Connpass MCP Server
+
+Usage: connpass-mcp-server [options]
+
+Options:
+  -t, --transport <type>  Transport type: http or sse (default: http)
+  -p, --port <number>     Port number for http/sse transports (default: 3000)
+  -h, --help             Show this help message
+
+Examples:
+  connpass-mcp-server                           # Start with HTTP transport on port 3000
+  connpass-mcp-server --transport sse --port 8080  # Start with SSE transport on port 8080
+  connpass-mcp-server -t http -p 5000          # Start with HTTP transport on port 5000
+
+Environment Variables:
+  CONNPASS_API_KEY                         Connpass API Key
+  CONNPASS_DEFAULT_USER_ID                 Default user ID
+  CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT   Include presentations by default
+  CONNPASS_ENABLE_APPS_SDK_OUTPUT          Enable Apps SDK output
+  MCP_BASE_PATH                            MCP base path (for SSE transport)
+      `);
+      process.exit(0);
+    }
   }
 
-  const requestedPort = Number.parseInt(process.env.PORT ?? "", 10);
-  const port = Number.isFinite(requestedPort) ? requestedPort : 3000;
-  const basePath = getMcpBasePath();
-  const messagePath = basePath === "/" ? "/messages" : `${basePath}/messages`;
+  // Allow environment variable override for port
+  const envPort = Number.parseInt(process.env.PORT ?? "", 10);
+  if (Number.isFinite(envPort)) {
+    port = envPort;
+  }
 
-  await startSseServer({
-    createMcpServer: createConnpassServer,
-    ssePath: basePath,
-    messagePath,
-    port,
-  });
+  // Allow environment variable override for transport
+  const envTransport = process.env.MCP_TRANSPORT?.toLowerCase();
+  if (envTransport) {
+    transport = envTransport;
+  }
+
+  return { transport, port };
+}
+
+async function main() {
+  const { transport, port } = parseArgs();
+
+  switch (transport) {
+    case "http": {
+      await startHttpServer({
+        createMcpServer: createConnpassServer,
+        port,
+      });
+      break;
+    }
+
+    case "sse": {
+      const basePath = getMcpBasePath();
+      const messagePath = basePath === "/" ? "/messages" : `${basePath}/messages`;
+
+      await startSseServer({
+        createMcpServer: createConnpassServer,
+        ssePath: basePath,
+        messagePath,
+        port,
+      });
+      break;
+    }
+
+    default:
+      throw new Error(
+        `Unsupported MCP transport: ${transport}. Use 'http' or 'sse'.`
+      );
+  }
 }
 
 main().catch((error) => {
