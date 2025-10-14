@@ -1,5 +1,7 @@
 # Connpass API Client
 
+[![npm version](https://badge.fury.io/js/@kajidog%2Fconnpass-api-client.svg)](https://www.npmjs.com/package/@kajidog/connpass-api-client)
+
 TypeScript client for Connpass API v2 with clean architecture design.
 
 ## Installation
