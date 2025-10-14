@@ -1,5 +1,7 @@
 # Connpass MCP Server
 
+[![npm version](https://badge.fury.io/js/@kajidog%2Fconnpass-mcp-server.svg)](https://www.npmjs.com/package/@kajidog/connpass-mcp-server)
+
 Connpass の API を MCP (Model Context Protocol) 経由で利用するためのツール群です。AI エージェントや LLM が Connpass のイベント・グループ・ユーザー情報を自然言語に近い入力で取得できます。
 
 ## できること
@@ -32,10 +34,42 @@ Connpass の API を MCP (Model Context Protocol) 経由で利用するための
 
 ## クイックセットアップ
 
+### npx で即座に起動
+
+```bash
+# HTTP トランスポートで起動（デフォルト）
+npx @kajidog/connpass-mcp-server
+
+# ポート指定
+npx @kajidog/connpass-mcp-server --port 8080
+
+# SSE トランスポートで起動
+npx @kajidog/connpass-mcp-server --transport sse
+
+# ヘルプを表示
+npx @kajidog/connpass-mcp-server --help
+```
+
+環境変数を設定する場合：
+
+```bash
+CONNPASS_API_KEY=your-api-key npx @kajidog/connpass-mcp-server
+```
+
+### グローバルインストール
+
+```bash
+# インストール
+npm install -g @kajidog/connpass-mcp-server
+
+# 実行
+connpass-mcp-server
+```
+
 ### 必要要件
 
 - Node.js 18 以上
-- pnpm 8 以上（通常インストールの場合）
+- pnpm 8 以上（開発・通常インストールの場合）
 - Docker & Docker Compose（Docker 利用の場合）
 
 ### Docker で起動
