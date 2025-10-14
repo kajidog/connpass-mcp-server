@@ -1,6 +1,6 @@
 {
   "$schema": "https://unpkg.com/@changesets/config@3.1.1/schema.json",
-  "changelog": ["@changesets/changelog-github", { "repo": "kajidog/connpass-in-chatgpt" }],
+  "changelog": ["@changesets/changelog-github", { "repo": "kajidog/connpass-mcp-server" }],
   "commit": false,
   "fixed": [],
   "linked": [],
