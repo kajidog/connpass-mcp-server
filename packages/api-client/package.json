@@ -22,9 +22,7 @@
   },
   "keywords": [
     "connpass",
-    "api",
-    "typescript",
-    "client"
+    "typescript"
   ],
   "type": "commonjs",
   "license": "MIT",
