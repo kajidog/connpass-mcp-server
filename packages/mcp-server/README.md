@@ -1,8 +1,44 @@
 # Connpass MCP Server
 
+[![npm version](https://badge.fury.io/js/@kajidog%2Fconnpass-mcp-server.svg)](https://www.npmjs.com/package/@kajidog/connpass-mcp-server)
+
 Connpass MCP Server は、MCP (Model Context Protocol) 経由で Connpass API を扱うためのツール群です。AI やエージェントが理解しやすいパラメータ設計になっており、自然言語に近い入力でイベント・グループ・ユーザー情報を取得できます。
 
-## セットアップ
+## インストール
+
+### npx で即座に起動
+
+```bash
+# HTTP トランスポートで起動（デフォルト）
+npx @kajidog/connpass-mcp-server
+
+# ポート指定
+npx @kajidog/connpass-mcp-server --port 8080
+
+# SSE トランスポートで起動
+npx @kajidog/connpass-mcp-server --transport sse
+
+# ヘルプを表示
+npx @kajidog/connpass-mcp-server --help
+```
+
+環境変数を設定する場合：
+
+```bash
+CONNPASS_API_KEY=your-api-key npx @kajidog/connpass-mcp-server
+```
+
+### グローバルインストール
+
+```bash
+# インストール
+npm install -g @kajidog/connpass-mcp-server
+
+# 実行
+connpass-mcp-server
+```
+
+## 開発用セットアップ
 
 1. 依存関係をインストールします。
 

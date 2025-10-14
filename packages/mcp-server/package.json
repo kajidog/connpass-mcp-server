@@ -26,10 +26,8 @@
   },
   "keywords": [
     "mcp",
-    "connpass",
-    "api",
-    "server",
-    "model-context-protocol"
+    "mcp-server",
+    "connpass"
   ],
   "type": "commonjs",
   "license": "MIT",
