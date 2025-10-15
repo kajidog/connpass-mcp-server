@@ -2,5 +2,4 @@
 "@kajidog/connpass-api-client": minor
 ---
 
-- リクエストが遅延した場合でも他のリクエスト開始を待たせすぎないようにレートリミットのキュー処理を改善
-- 設定でレートリミットキューを無効化できるオプションを追加
+- Implement the rate limit queue
