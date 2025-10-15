@@ -7,16 +7,21 @@ export interface HttpClientConfig {
   apiKey: string;
   timeout?: number;
   rateLimitDelay?: number;
+  rateLimitEnabled?: boolean;
 }
 
 export class HttpClient {
   private client: AxiosInstance;
   private lastRequestTime: number = 0;
   private rateLimitDelay: number;
+  private rateLimitEnabled: boolean;
+  private rateLimiterTail: Promise<void> = Promise.resolve();
+  private nextAvailableTime: number = 0;
 
   constructor(config: HttpClientConfig) {
     this.rateLimitDelay = config.rateLimitDelay ?? 1000;
-    
+    this.rateLimitEnabled = config.rateLimitEnabled ?? true;
+
     this.client = axios.create({
       baseURL: config.baseURL,
       timeout: config.timeout ?? 30000,
@@ -67,24 +72,46 @@ export class HttpClient {
     );
   }
 
-  private async waitForRateLimit(): Promise<void> {
+  private async applyRateLimit(): Promise<void> {
+    if (!this.rateLimitEnabled || this.rateLimitDelay <= 0) {
+      this.lastRequestTime = Date.now();
+      this.nextAvailableTime = this.lastRequestTime;
+      return;
+    }
+
     const now = Date.now();
-    const timeSinceLastRequest = now - this.lastRequestTime;
-    
-    if (timeSinceLastRequest < this.rateLimitDelay) {
-      const waitTime = this.rateLimitDelay - timeSinceLastRequest;
+    const scheduledStart = Math.max(now, this.nextAvailableTime);
+    const waitTime = scheduledStart - now;
+
+    if (waitTime > 0) {
       await new Promise(resolve => setTimeout(resolve, waitTime));
     }
-    
+
     this.lastRequestTime = Date.now();
+    this.nextAvailableTime = this.lastRequestTime + this.rateLimitDelay;
+  }
+
+  private scheduleRequest<T>(fn: () => Promise<T>): Promise<T> {
+    if (!this.rateLimitEnabled || this.rateLimitDelay <= 0) {
+      this.lastRequestTime = Date.now();
+      this.nextAvailableTime = this.lastRequestTime;
+      return fn();
+    }
+
+    const waitPromise = this.rateLimiterTail.then(
+      () => this.applyRateLimit(),
+      () => this.applyRateLimit()
+    );
+
+    this.rateLimiterTail = waitPromise.then(
+      () => undefined,
+      () => undefined
+    );
+
+    return waitPromise.then(() => fn());
   }
 
   async get<T>(url: string, params?: Record<string, any>): Promise<AxiosResponse<T>> {
-    try {
-      await this.waitForRateLimit();
-      return await this.client.get<T>(url, { params });
-    } catch (error) {
-      throw error;
-    }
+    return this.scheduleRequest(() => this.client.get<T>(url, { params }));
   }
 }

@@ -38,6 +38,7 @@ const client = new ConnpassClient({
   baseURL: 'https://connpass.com/api/v2', // optional, default value
   timeout: 30000, // optional, default 30 seconds
   rateLimitDelay: 1000, // optional, default 1 second between requests
+  rateLimitEnabled: true, // optional, default true. Disable to opt-out of queuing
   enablePresentationCache: true, // optional, default true
   presentationCacheTtlMs: 1000 * 60 * 60, // optional, default 1 hour
   presentationCachePath: './data/presentation-cache.json' // optional, default cwd/data
@@ -174,7 +175,7 @@ try {
 ## Features
 
 - ✅ Full TypeScript support with comprehensive type definitions
-- ✅ Rate limiting built-in (1 request per second)
+- ✅ Rate limiting built-in (1 request per second) with optional queuing
 - ✅ Automatic pagination support with `getAll*` methods
 - ✅ Comprehensive error handling with specific error types
 - ✅ Input validation

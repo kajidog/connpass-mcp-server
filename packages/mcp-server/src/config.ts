@@ -25,6 +25,8 @@ function parseOptionalBooleanEnv(raw: string | undefined, envName: string): bool
 const RAW_DEFAULT_USER_ID = process.env.CONNPASS_DEFAULT_USER_ID;
 const RAW_INCLUDE_PRESENTATIONS_DEFAULT = process.env.CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT;
 const RAW_ENABLE_APPS_SDK_OUTPUT = process.env.CONNPASS_ENABLE_APPS_SDK_OUTPUT;
+const RAW_RATE_LIMIT_ENABLED = process.env.CONNPASS_RATE_LIMIT_ENABLED;
+const RAW_RATE_LIMIT_DELAY_MS = process.env.CONNPASS_RATE_LIMIT_DELAY_MS;
 const RAW_MCP_BASE_PATH = process.env.MCP_BASE_PATH;
 
 const parsedDefaultUserId = (() => {
@@ -53,6 +55,27 @@ const parsedEnableAppsSdkOutput = parseOptionalBooleanEnv(
   "CONNPASS_ENABLE_APPS_SDK_OUTPUT"
 );
 
+const parsedRateLimitEnabled = parseOptionalBooleanEnv(
+  RAW_RATE_LIMIT_ENABLED,
+  "CONNPASS_RATE_LIMIT_ENABLED"
+);
+
+const parsedRateLimitDelayMs = (() => {
+  if (!RAW_RATE_LIMIT_DELAY_MS) {
+    return undefined;
+  }
+
+  const numeric = Number(RAW_RATE_LIMIT_DELAY_MS);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    console.warn(
+      "[mcp-server] CONNPASS_RATE_LIMIT_DELAY_MS is set but not a non-negative number. It will be ignored."
+    );
+    return undefined;
+  }
+
+  return Math.trunc(numeric);
+})();
+
 export function getDefaultUserId(): number | undefined {
   return parsedDefaultUserId;
 }
@@ -63,6 +86,14 @@ export function getDefaultIncludePresentations(): boolean | undefined {
 
 export function isAppsSdkOutputEnabled(): boolean {
   return parsedEnableAppsSdkOutput ?? false;
+}
+
+export function getRateLimitEnabled(): boolean | undefined {
+  return parsedRateLimitEnabled;
+}
+
+export function getRateLimitDelayMs(): number | undefined {
+  return parsedRateLimitDelayMs;
 }
 
 export function getMcpBasePath(): string {

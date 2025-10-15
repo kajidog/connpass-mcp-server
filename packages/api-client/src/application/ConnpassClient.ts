@@ -18,6 +18,7 @@ export interface ConnpassClientConfig {
   baseURL?: string;
   timeout?: number;
   rateLimitDelay?: number;
+  rateLimitEnabled?: boolean;
   enablePresentationCache?: boolean;
   presentationCacheTtlMs?: number;
   presentationCachePath?: string;
@@ -38,6 +39,7 @@ export class ConnpassClient {
       apiKey: config.apiKey,
       timeout: config.timeout,
       rateLimitDelay: config.rateLimitDelay,
+      rateLimitEnabled: config.rateLimitEnabled,
     });
 
     const presentationCache = new PresentationCache({

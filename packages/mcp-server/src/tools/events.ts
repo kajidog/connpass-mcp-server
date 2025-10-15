@@ -206,23 +206,15 @@ async function maybeAttachPresentations(
     return events as EventWithPresentations[];
   }
 
-  const enriched: EventWithPresentations[] = [];
-  for (let i = 0; i < events.length; i++) {
-    const event = events[i];
-
-    // Respect Connpass API rate limit: 1 request per second
-    if (i > 0) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    const presentationsResponse = await connpassClient.getEventPresentations(event.id);
-    enriched.push({
-      ...event,
-      presentations: presentationsResponse.presentations,
-    });
-  }
-
-  return enriched;
+  return Promise.all(
+    events.map(async (event) => {
+      const presentationsResponse = await connpassClient.getEventPresentations(event.id);
+      return {
+        ...event,
+        presentations: presentationsResponse.presentations,
+      } satisfies EventWithPresentations;
+    })
+  );
 }
 
 const eventToolsInternal: Tool[] = [
@@ -375,8 +367,6 @@ const eventHandlers = {
       resolvedUserId = foundUser.id;
       userNickname = foundUser.nickname;
 
-      // Wait 1 second to respect rate limit before next API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     if (!resolvedUserId) {
@@ -406,8 +396,6 @@ const eventHandlers = {
       }
       userNickname = user.nickname;
 
-      // Wait 1 second to respect rate limit before next API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     const searchResponse = await connpassClient.searchEvents({
