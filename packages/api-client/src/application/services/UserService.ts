@@ -62,8 +62,6 @@ export class UserService {
 
       start += count;
 
-      // Wait 1 second to respect API rate limit (1 request per second)
-      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     return allUsers;
