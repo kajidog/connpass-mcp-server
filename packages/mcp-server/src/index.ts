@@ -14,15 +14,25 @@ import { startSseServer } from "./transports/sse.js";
 import { startHttpServer } from "./transports/http.js";
 import { tools, handleToolCall } from "./tools/index.js";
 import { buildCallToolResult } from "./apps-sdk.js";
-import { getMcpBasePath, isAppsSdkOutputEnabled } from "./config.js";
+import {
+  getMcpBasePath,
+  getRateLimitDelayMs,
+  getRateLimitEnabled,
+  isAppsSdkOutputEnabled,
+} from "./config.js";
 import {
   getResourceContent,
   listResourceTemplates,
   listResources,
 } from "./widgets/index.js";
 
+const rateLimitEnabled = getRateLimitEnabled();
+const rateLimitDelay = getRateLimitDelayMs();
+
 const connpassClient = new ConnpassClient({
   apiKey: process.env.CONNPASS_API_KEY || "dummy-key",
+  ...(rateLimitEnabled !== undefined ? { rateLimitEnabled } : {}),
+  ...(rateLimitDelay !== undefined ? { rateLimitDelay } : {}),
 });
 
 function createConnpassServer() {
