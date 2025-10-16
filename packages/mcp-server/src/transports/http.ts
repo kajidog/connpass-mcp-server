@@ -1,5 +1,9 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { randomUUID } from "node:crypto";
+import {
+  type IncomingMessage,
+  type ServerResponse,
+  createServer,
+} from "node:http";
 
 import type { Server as McpServer } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -55,7 +59,11 @@ export async function startHttpServer(options: StartHttpServerOptions) {
       return;
     }
 
-    if (req.method !== "POST" && req.method !== "GET" && req.method !== "DELETE") {
+    if (
+      req.method !== "POST" &&
+      req.method !== "GET" &&
+      req.method !== "DELETE"
+    ) {
       res.writeHead(405).end("Method Not Allowed");
       return;
     }
@@ -150,7 +158,7 @@ export async function startHttpServer(options: StartHttpServerOptions) {
                 message: "Bad Request: No valid session ID provided",
               },
               id: null,
-            })
+            }),
           );
           return;
         }
@@ -176,7 +184,7 @@ export async function startHttpServer(options: StartHttpServerOptions) {
   await new Promise<void>((resolve) => {
     httpServer.listen(port, () => {
       log.info(
-        `Connpass MCP Server listening on http://localhost:${port} (Streamable HTTP transport)`
+        `Connpass MCP Server listening on http://localhost:${port} (Streamable HTTP transport)`,
       );
       resolve();
     });
@@ -189,7 +197,7 @@ export async function startHttpServer(options: StartHttpServerOptions) {
         Array.from(sessions.values(), async ({ server, transport }) => {
           await transport.close();
           await server.close();
-        })
+        }),
       ).catch((error: unknown) => {
         log.error("Failed to shut down sessions:", error);
       });

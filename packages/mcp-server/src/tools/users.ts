@@ -1,13 +1,13 @@
+import { ConnpassClient } from "@kajidog/connpass-api-client";
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { ConnpassClient } from "@kajidog/connpass-api-client";
 
 import {
-  applyPagination,
   EVENT_SORT_KEYS,
   EVENT_SORT_MAP,
   USER_SORT_KEYS,
   USER_SORT_MAP,
+  applyPagination,
 } from "./shared.js";
 
 const UserSearchInputSchema = z.object({
@@ -20,12 +20,7 @@ const UserSearchInputSchema = z.object({
     .array(z.number())
     .describe("Limit results to these user IDs")
     .optional(),
-  page: z
-    .number()
-    .int()
-    .min(1)
-    .describe("1-based page number")
-    .optional(),
+  page: z.number().int().min(1).describe("1-based page number").optional(),
   pageSize: z
     .number()
     .int()
@@ -54,12 +49,7 @@ const UserGroupsInputSchema = z.object({
     .max(100)
     .describe("How many items to return (default 20)")
     .optional(),
-  page: z
-    .number()
-    .int()
-    .min(1)
-    .describe("1-based page number")
-    .optional(),
+  page: z.number().int().min(1).describe("1-based page number").optional(),
 });
 
 const UserRelationshipInputSchema = z.object({
@@ -75,12 +65,7 @@ const UserRelationshipInputSchema = z.object({
     .max(100)
     .describe("How many items to return (default 20)")
     .optional(),
-  page: z
-    .number()
-    .int()
-    .min(1)
-    .describe("1-based page number")
-    .optional(),
+  page: z.number().int().min(1).describe("1-based page number").optional(),
   sort: z
     .enum(EVENT_SORT_KEYS)
     .describe("Sort events by schedule or recency")
@@ -91,7 +76,7 @@ type UserRelationshipInput = z.infer<typeof UserRelationshipInputSchema>;
 
 function buildUserSearchParams(
   input: UserSearchInput,
-  options?: { includePagination?: boolean }
+  options?: { includePagination?: boolean },
 ) {
   const pagination = applyPagination(input.page, input.pageSize, options);
   return {
@@ -103,7 +88,9 @@ function buildUserSearchParams(
 }
 
 function buildUserRelationshipParams(input: UserRelationshipInput) {
-  const pagination = applyPagination(input.page, input.limit, { includePagination: true });
+  const pagination = applyPagination(input.page, input.limit, {
+    includePagination: true,
+  });
   return {
     pagination,
     order: input.sort ? EVENT_SORT_MAP[input.sort] : undefined,
@@ -243,7 +230,10 @@ const userHandlers = {
     const pagination = applyPagination(page, limit);
     return connpassClient.getUserGroups(userId, pagination);
   },
-  async get_user_attended_events(args: unknown, connpassClient: ConnpassClient) {
+  async get_user_attended_events(
+    args: unknown,
+    connpassClient: ConnpassClient,
+  ) {
     const parsed = UserRelationshipInputSchema.parse(args ?? {});
     const { pagination, order } = buildUserRelationshipParams(parsed);
     return connpassClient.getUserAttendedEvents(parsed.userId, {
@@ -251,7 +241,10 @@ const userHandlers = {
       order,
     });
   },
-  async get_user_presenter_events(args: unknown, connpassClient: ConnpassClient) {
+  async get_user_presenter_events(
+    args: unknown,
+    connpassClient: ConnpassClient,
+  ) {
     const parsed = UserRelationshipInputSchema.parse(args ?? {});
     const { pagination, order } = buildUserRelationshipParams(parsed);
     return connpassClient.getUserPresenterEvents(parsed.userId, {
@@ -272,7 +265,7 @@ export function isUserTool(name: string): name is UserToolName {
 export async function handleUserTool(
   name: UserToolName,
   args: unknown,
-  connpassClient: ConnpassClient
+  connpassClient: ConnpassClient,
 ) {
   return userHandlers[name](args, connpassClient);
 }

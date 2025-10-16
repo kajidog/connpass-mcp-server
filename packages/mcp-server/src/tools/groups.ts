@@ -1,35 +1,33 @@
+import { ConnpassClient } from "@kajidog/connpass-api-client";
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { ConnpassClient } from "@kajidog/connpass-api-client";
 
-import { applyPagination, GROUP_SORT_KEYS, GROUP_SORT_MAP, GroupSortKey } from "./shared.js";
+import {
+  GROUP_SORT_KEYS,
+  GROUP_SORT_MAP,
+  GroupSortKey,
+  applyPagination,
+} from "./shared.js";
 
 const GroupSearchInputSchema = z.object({
   query: z
     .string()
     .min(1)
-    .describe("Search for groups whose title or description matches all keywords")
+    .describe(
+      "Search for groups whose title or description matches all keywords",
+    )
     .optional(),
   groupIds: z
     .array(z.number())
     .describe("Limit results to these group IDs")
     .optional(),
-  country: z
-    .string()
-    .min(1)
-    .describe("ISO country code, e.g. 'JP'")
-    .optional(),
+  country: z.string().min(1).describe("ISO country code, e.g. 'JP'").optional(),
   prefecture: z
     .string()
     .min(1)
     .describe("Prefecture name to filter by")
     .optional(),
-  page: z
-    .number()
-    .int()
-    .min(1)
-    .describe("1-based page number")
-    .optional(),
+  page: z.number().int().min(1).describe("1-based page number").optional(),
   pageSize: z
     .number()
     .int()
@@ -47,7 +45,7 @@ type GroupSearchInput = z.infer<typeof GroupSearchInputSchema>;
 
 function buildGroupSearchParams(
   input: GroupSearchInput,
-  options?: { includePagination?: boolean }
+  options?: { includePagination?: boolean },
 ) {
   const pagination = applyPagination(input.page, input.pageSize, options);
   return {
@@ -69,7 +67,8 @@ const groupToolsInternal: Tool[] = [
       properties: {
         query: {
           type: "string",
-          description: "Keywords that must match the group title or description",
+          description:
+            "Keywords that must match the group title or description",
         },
         groupIds: {
           type: "array",
@@ -124,7 +123,7 @@ export function isGroupTool(name: string): name is GroupToolName {
 export async function handleGroupTool(
   name: GroupToolName,
   args: unknown,
-  connpassClient: ConnpassClient
+  connpassClient: ConnpassClient,
 ) {
   return groupHandlers[name](args, connpassClient);
 }
