@@ -1,18 +1,15 @@
 #!/usr/bin/env node
 
+import { ConnpassClient } from "@kajidog/connpass-api-client";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import {
   CallToolRequestSchema,
   ListResourceTemplatesRequestSchema,
   ListResourcesRequestSchema,
   ListToolsRequestSchema,
-  ReadResourceRequestSchema,
   type ReadResourceRequest,
+  ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import { ConnpassClient } from "@kajidog/connpass-api-client";
-import { startSseServer } from "./transports/sse.js";
-import { startHttpServer } from "./transports/http.js";
-import { tools, handleToolCall } from "./tools/index.js";
 import { buildCallToolResult } from "./apps-sdk.js";
 import {
   getMcpBasePath,
@@ -20,6 +17,9 @@ import {
   getRateLimitEnabled,
   isAppsSdkOutputEnabled,
 } from "./config.js";
+import { handleToolCall, tools } from "./tools/index.js";
+import { startHttpServer } from "./transports/http.js";
+import { startSseServer } from "./transports/sse.js";
 import {
   getResourceContent,
   listResourceTemplates,
@@ -38,7 +38,7 @@ const connpassClient = new ConnpassClient({
 function createConnpassServer() {
   const appsSdkOutputEnabled = isAppsSdkOutputEnabled();
   console.log(
-    `[mcp-server] Apps SDK output ${appsSdkOutputEnabled ? "enabled" : "disabled"}.`
+    `[mcp-server] Apps SDK output ${appsSdkOutputEnabled ? "enabled" : "disabled"}.`,
   );
   const server = new Server(
     {
@@ -51,7 +51,7 @@ function createConnpassServer() {
         resources: {},
         resourceTemplates: {},
       },
-    }
+    },
   );
 
   server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -70,21 +70,24 @@ function createConnpassServer() {
     return { resourceTemplates: templates };
   });
 
-  server.setRequestHandler(ReadResourceRequestSchema, async (request: ReadResourceRequest) => {
-    const content = getResourceContent(request.params.uri);
-    if (!content) {
-      throw new Error(`Unknown resource: ${request.params.uri}`);
-    }
+  server.setRequestHandler(
+    ReadResourceRequestSchema,
+    async (request: ReadResourceRequest) => {
+      const content = getResourceContent(request.params.uri);
+      if (!content) {
+        throw new Error(`Unknown resource: ${request.params.uri}`);
+      }
 
-    const meta = Object.prototype.hasOwnProperty.call(content, "_meta")
-      ? (content as Record<string, unknown>)._meta
-      : undefined;
-    console.log("[mcp-server] read_resource", request.params.uri, meta);
+      const meta = Object.prototype.hasOwnProperty.call(content, "_meta")
+        ? (content as Record<string, unknown>)._meta
+        : undefined;
+      console.log("[mcp-server] read_resource", request.params.uri, meta);
 
-    return {
-      contents: [content],
-    };
-  });
+      return {
+        contents: [content],
+      };
+    },
+  );
 
   server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
@@ -198,7 +201,8 @@ async function main() {
 
     case "sse": {
       const basePath = getMcpBasePath();
-      const messagePath = basePath === "/" ? "/messages" : `${basePath}/messages`;
+      const messagePath =
+        basePath === "/" ? "/messages" : `${basePath}/messages`;
 
       await startSseServer({
         createMcpServer: createConnpassServer,
@@ -211,7 +215,7 @@ async function main() {
 
     default:
       throw new Error(
-        `Unsupported MCP transport: ${transport}. Use 'http' or 'sse'.`
+        `Unsupported MCP transport: ${transport}. Use 'http' or 'sse'.`,
       );
   }
 }

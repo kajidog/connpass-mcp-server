@@ -6,6 +6,7 @@
       "package.json",
       ".github/**/*.yml",
       "packages/mcp-server/package.json",
+      "packages/mcp-server/src/**/*.ts",
       "packages/mcp-server/test/**/*.ts",
       "packages/mcp-server/tsconfig.vitest.json",
       "packages/mcp-server/vitest.config.ts"

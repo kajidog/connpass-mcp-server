@@ -66,7 +66,7 @@ function formatAsHyphenatedYmd(date: Date): string {
 
 export function parseDateInput(
   input: string,
-  options?: { style?: "compact" | "hyphenated" }
+  options?: { style?: "compact" | "hyphenated" },
 ): string {
   const normalized = input.trim().toLowerCase();
   const relativeFactory = RELATIVE_DATE_KEYWORDS[normalized];
@@ -124,7 +124,9 @@ export function parseHyphenatedDate(input: string): string {
   throw new Error(`Could not convert date input to YYYY-MM-DD: ${input}`);
 }
 
-export function normalizeStringArray(value?: string | string[]): string[] | undefined {
+export function normalizeStringArray(
+  value?: string | string[],
+): string[] | undefined {
   if (!value) {
     return undefined;
   }
@@ -136,7 +138,7 @@ export type PaginationParams = { start?: number; count?: number };
 export function applyPagination(
   page: number | undefined,
   pageSize: number | undefined,
-  options?: { includePagination?: boolean }
+  options?: { includePagination?: boolean },
 ): PaginationParams {
   const includePagination = options?.includePagination ?? true;
   if (!includePagination) {

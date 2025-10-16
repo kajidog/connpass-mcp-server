@@ -1,29 +1,32 @@
+import { ConnpassClient } from "@kajidog/connpass-api-client";
 import { Tool } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
-import { ConnpassClient } from "@kajidog/connpass-api-client";
 
-import {
-  applyPagination,
-  EVENT_SORT_KEYS,
-  EVENT_SORT_MAP,
-  normalizeStringArray,
-  parseDateInput,
-  parseHyphenatedDate,
-  toYmdArray,
-} from "./shared.js";
-import {
-  formatEventList,
-  formatEventsResponse,
-  formatPresentationsResponse,
-  FormatEventOptions,
-} from "./formatting.js";
+import type {
+  Event,
+  PresentationsResponse,
+} from "@kajidog/connpass-api-client";
 import {
   getDefaultIncludePresentations,
   getDefaultUserId,
   isAppsSdkOutputEnabled,
 } from "../config.js";
-import type { Event, PresentationsResponse } from "@kajidog/connpass-api-client";
 import { CONNPASS_EVENTS_WIDGET_URI } from "../widgets/connpass-events.js";
+import {
+  FormatEventOptions,
+  formatEventList,
+  formatEventsResponse,
+  formatPresentationsResponse,
+} from "./formatting.js";
+import {
+  EVENT_SORT_KEYS,
+  EVENT_SORT_MAP,
+  applyPagination,
+  normalizeStringArray,
+  parseDateInput,
+  parseHyphenatedDate,
+  toYmdArray,
+} from "./shared.js";
 
 function buildEventsWidgetMeta() {
   return {
@@ -45,23 +48,29 @@ const EventSearchInputSchema = z.object({
   anyQuery: z
     .string()
     .min(1)
-    .describe("Search for events that match ANY of these keywords (comma separated is ok)")
+    .describe(
+      "Search for events that match ANY of these keywords (comma separated is ok)",
+    )
     .optional(),
   on: z
     .union([z.string().min(1), z.array(z.string().min(1))])
-    .describe("Specific date(s) to match. Natural language like 'today' or '2024-12-24' is accepted")
+    .describe(
+      "Specific date(s) to match. Natural language like 'today' or '2024-12-24' is accepted",
+    )
     .optional(),
   from: z
     .string()
     .min(1)
     .describe(
-      "Start of the date range (inclusive). Natural language like 'next Monday' works when Date.parse can understand it"
+      "Start of the date range (inclusive). Natural language like 'next Monday' works when Date.parse can understand it",
     )
     .optional(),
   to: z
     .string()
     .min(1)
-    .describe("End of the date range (inclusive). Use together with 'from' for a window")
+    .describe(
+      "End of the date range (inclusive). Use together with 'from' for a window",
+    )
     .optional(),
   participantNickname: z
     .string()
@@ -120,7 +129,9 @@ const MyUpcomingEventsInputSchema = z.object({
   nickname: z
     .string()
     .min(1)
-    .describe("Connpass user nickname. If specified, searches for the user by this nickname")
+    .describe(
+      "Connpass user nickname. If specified, searches for the user by this nickname",
+    )
     .optional(),
   daysAhead: z
     .number()
@@ -139,14 +150,14 @@ const MyUpcomingEventsInputSchema = z.object({
   includePresentations: z
     .boolean()
     .describe(
-      "Whether to fetch presentation details for each event. Extra API calls respect the 1 req/sec limit"
+      "Whether to fetch presentation details for each event. Extra API calls respect the 1 req/sec limit",
     )
     .optional(),
 });
 
 function buildEventSearchParams(
   input: EventSearchInput,
-  options?: { includePagination?: boolean }
+  options?: { includePagination?: boolean },
 ) {
   const pagination = applyPagination(input.page, input.pageSize, options);
 
@@ -170,7 +181,11 @@ function startOfDay(date: Date): Date {
 }
 
 function isSameDay(a: Date, b: Date): boolean {
-  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
 }
 
 function formatDateLabel(date: Date): string {
@@ -180,7 +195,9 @@ function formatDateLabel(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-type EventWithPresentations = Event & { presentations?: PresentationsResponse["presentations"] };
+type EventWithPresentations = Event & {
+  presentations?: PresentationsResponse["presentations"];
+};
 
 const DEFAULT_EVENT_FORMAT_OPTIONS: FormatEventOptions = {
   descriptionLimit: 300,
@@ -200,7 +217,7 @@ function resolveFormatOptions(): FormatEventOptions {
 async function maybeAttachPresentations(
   events: Event[],
   includePresentations: boolean | undefined,
-  connpassClient: ConnpassClient
+  connpassClient: ConnpassClient,
 ): Promise<EventWithPresentations[]> {
   if (!includePresentations || events.length === 0) {
     return events as EventWithPresentations[];
@@ -208,29 +225,34 @@ async function maybeAttachPresentations(
 
   return Promise.all(
     events.map(async (event) => {
-      const presentationsResponse = await connpassClient.getEventPresentations(event.id);
+      const presentationsResponse = await connpassClient.getEventPresentations(
+        event.id,
+      );
       return {
         ...event,
         presentations: presentationsResponse.presentations,
       } satisfies EventWithPresentations;
-    })
+    }),
   );
 }
 
 const eventToolsInternal: Tool[] = [
   {
     name: "search_events",
-    description: "Find Connpass events using natural date phrases and simple filters",
+    description:
+      "Find Connpass events using natural date phrases and simple filters",
     inputSchema: {
       type: "object",
       properties: {
         query: {
           type: "string",
-          description: "All keywords that must appear in the event title / description",
+          description:
+            "All keywords that must appear in the event title / description",
         },
         anyQuery: {
           type: "string",
-          description: "Any of these keywords may match (OR search, comma separated is ok)",
+          description:
+            "Any of these keywords may match (OR search, comma separated is ok)",
         },
         on: {
           description:
@@ -242,7 +264,8 @@ const eventToolsInternal: Tool[] = [
         },
         from: {
           type: "string",
-          description: "Inclusive start date. Natural expressions like 'next Monday' are accepted",
+          description:
+            "Inclusive start date. Natural expressions like 'next Monday' are accepted",
         },
         to: {
           type: "string",
@@ -277,7 +300,8 @@ const eventToolsInternal: Tool[] = [
           type: "integer",
           minimum: 1,
           maximum: 100,
-          description: "How many events per page (default 20, Connpass max 100)",
+          description:
+            "How many events per page (default 20, Connpass max 100)",
         },
         sort: {
           type: "string",
@@ -304,17 +328,20 @@ const eventToolsInternal: Tool[] = [
   },
   {
     name: "get_my_upcoming_events",
-    description: "Get today's and upcoming events for the default or specified user",
+    description:
+      "Get today's and upcoming events for the default or specified user",
     inputSchema: {
       type: "object",
       properties: {
         userId: {
           type: "integer",
-          description: "Connpass user ID to inspect. Falls back to CONNPASS_DEFAULT_USER_ID",
+          description:
+            "Connpass user ID to inspect. Falls back to CONNPASS_DEFAULT_USER_ID",
         },
         nickname: {
           type: "string",
-          description: "Connpass user nickname. If specified, searches for the user by this nickname",
+          description:
+            "Connpass user nickname. If specified, searches for the user by this nickname",
         },
         daysAhead: {
           type: "integer",
@@ -354,30 +381,33 @@ const eventHandlers = {
   async get_my_upcoming_events(args: unknown, connpassClient: ConnpassClient) {
     const parsed = MyUpcomingEventsInputSchema.parse(args ?? {});
 
-    let resolvedUserId: number | undefined = parsed.userId ?? getDefaultUserId();
+    let resolvedUserId: number | undefined =
+      parsed.userId ?? getDefaultUserId();
     let userNickname: string | undefined;
 
     // If nickname is provided, search for the user by nickname
     if (parsed.nickname) {
-      const userSearchResponse = await connpassClient.searchUsers({ nickname: parsed.nickname });
+      const userSearchResponse = await connpassClient.searchUsers({
+        nickname: parsed.nickname,
+      });
       if (userSearchResponse.users.length === 0) {
         throw new Error(`User with nickname "${parsed.nickname}" not found.`);
       }
       const foundUser = userSearchResponse.users[0];
       resolvedUserId = foundUser.id;
       userNickname = foundUser.nickname;
-
     }
 
     if (!resolvedUserId) {
       throw new Error(
-        "User ID or nickname is required. Pass 'userId', 'nickname', or set CONNPASS_DEFAULT_USER_ID in the environment."
+        "User ID or nickname is required. Pass 'userId', 'nickname', or set CONNPASS_DEFAULT_USER_ID in the environment.",
       );
     }
 
     const daysAhead = parsed.daysAhead ?? 7;
     const maxEventsToFetch = parsed.maxEvents ?? 30;
-    const includePresentations = parsed.includePresentations ?? getDefaultIncludePresentations();
+    const includePresentations =
+      parsed.includePresentations ?? getDefaultIncludePresentations();
 
     const today = startOfDay(new Date());
     const rangeEnd = new Date(today);
@@ -386,7 +416,9 @@ const eventHandlers = {
 
     // If nickname was not already resolved, fetch user info by ID
     if (!userNickname) {
-      const userResponse = await connpassClient.searchUsers({ userId: [resolvedUserId] });
+      const userResponse = await connpassClient.searchUsers({
+        userId: [resolvedUserId],
+      });
       if (userResponse.users.length === 0) {
         throw new Error(`User with ID ${resolvedUserId} not found.`);
       }
@@ -395,7 +427,6 @@ const eventHandlers = {
         throw new Error(`User with ID ${resolvedUserId} not found.`);
       }
       userNickname = user.nickname;
-
     }
 
     const searchResponse = await connpassClient.searchEvents({
@@ -407,15 +438,23 @@ const eventHandlers = {
     });
 
     const todayEvents = searchResponse.events.filter((event) =>
-      isSameDay(new Date(event.startedAt), today)
+      isSameDay(new Date(event.startedAt), today),
     );
     const upcomingEvents = searchResponse.events.filter(
-      (event) => !isSameDay(new Date(event.startedAt), today)
+      (event) => !isSameDay(new Date(event.startedAt), today),
     );
 
     const [enrichedToday, enrichedUpcoming] = await Promise.all([
-      maybeAttachPresentations(todayEvents, includePresentations, connpassClient),
-      maybeAttachPresentations(upcomingEvents, includePresentations, connpassClient),
+      maybeAttachPresentations(
+        todayEvents,
+        includePresentations,
+        connpassClient,
+      ),
+      maybeAttachPresentations(
+        upcomingEvents,
+        includePresentations,
+        connpassClient,
+      ),
     ]);
 
     return {
@@ -449,7 +488,7 @@ export function isEventTool(name: string): name is EventToolName {
 export async function handleEventTool(
   name: EventToolName,
   args: unknown,
-  connpassClient: ConnpassClient
+  connpassClient: ConnpassClient,
 ) {
   return eventHandlers[name](args, connpassClient);
 }

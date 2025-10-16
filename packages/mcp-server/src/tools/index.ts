@@ -2,11 +2,15 @@ import { ConnpassClient } from "@kajidog/connpass-api-client";
 
 import { eventTools, handleEventTool, isEventTool } from "./events.js";
 import { groupTools, handleGroupTool, isGroupTool } from "./groups.js";
-import { userTools, handleUserTool, isUserTool } from "./users.js";
+import { handleUserTool, isUserTool, userTools } from "./users.js";
 
 export const tools = [...eventTools, ...groupTools, ...userTools];
 
-export async function handleToolCall(name: string, args: unknown, connpassClient: ConnpassClient) {
+export async function handleToolCall(
+  name: string,
+  args: unknown,
+  connpassClient: ConnpassClient,
+) {
   if (isEventTool(name)) {
     return handleEventTool(name, args, connpassClient);
   }

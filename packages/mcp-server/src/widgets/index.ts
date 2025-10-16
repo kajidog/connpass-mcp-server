@@ -13,7 +13,10 @@ const widgets = [connpassEventsWidget];
 const resources = widgets.map((widget) => widget.resource);
 const resourceTemplates = widgets.map((widget) => widget.resourceTemplate);
 const widgetContentMap = new Map<string, () => ResourceContents[number]>([
-  [connpassEventsWidget.uri, connpassEventsWidget.content.bind(connpassEventsWidget)],
+  [
+    connpassEventsWidget.uri,
+    connpassEventsWidget.content.bind(connpassEventsWidget),
+  ],
 ]);
 
 const TOOL_WIDGET_MAP = new Map<string, string>([
@@ -29,7 +32,9 @@ export function listResourceTemplates(): ResourceTemplate[] {
   return resourceTemplates;
 }
 
-export function getResourceContent(uri: string): ResourceContents[number] | undefined {
+export function getResourceContent(
+  uri: string,
+): ResourceContents[number] | undefined {
   const factory = widgetContentMap.get(uri);
   return factory?.();
 }

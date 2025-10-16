@@ -39,7 +39,10 @@ function inferResultKind(toolName: string): string {
   return TOOL_KIND_MAP.get(toolName) ?? "generic";
 }
 
-function buildStructuredContent(toolName: string, result: unknown): Record<string, unknown> {
+function buildStructuredContent(
+  toolName: string,
+  result: unknown,
+): Record<string, unknown> {
   return {
     app: "connpass",
     tool: toolName,
@@ -49,9 +52,13 @@ function buildStructuredContent(toolName: string, result: unknown): Record<strin
   } satisfies Record<string, unknown>;
 }
 
-export function buildCallToolResult(options: BuildCallToolResultOptions): CallToolResult {
+export function buildCallToolResult(
+  options: BuildCallToolResultOptions,
+): CallToolResult {
   const { toolName, result, includeAppsSdkPayload } = options;
-  const templateUri = includeAppsSdkPayload ? getWidgetTemplateForTool(toolName) : undefined;
+  const templateUri = includeAppsSdkPayload
+    ? getWidgetTemplateForTool(toolName)
+    : undefined;
   const contentItem: any = {
     type: "text",
     text: toDisplayText(result),
@@ -61,7 +68,7 @@ export function buildCallToolResult(options: BuildCallToolResultOptions): CallTo
 
   if (includeAppsSdkPayload) {
     console.log(
-      `[apps-sdk] tool=${toolName} includeAppsSdkPayload=true template=${templateUri ?? "<missing>"}`
+      `[apps-sdk] tool=${toolName} includeAppsSdkPayload=true template=${templateUri ?? "<missing>"}`,
     );
     base.structuredContent = buildStructuredContent(toolName, result);
     if (templateUri) {
@@ -86,7 +93,7 @@ export function buildCallToolResult(options: BuildCallToolResultOptions): CallTo
       console.log("[apps-sdk] widget meta", contentItem._meta);
     } else {
       console.warn(
-        `[apps-sdk] tool=${toolName} has no widget template mapping; UI will not render.`
+        `[apps-sdk] tool=${toolName} has no widget template mapping; UI will not render.`,
       );
     }
   }

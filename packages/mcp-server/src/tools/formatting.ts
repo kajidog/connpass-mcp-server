@@ -114,9 +114,10 @@ function decodeHtmlEntities(input: string): string {
       }
 
       const value = numericMatch[1];
-      const codePoint = value.startsWith("x") || value.startsWith("X")
-        ? Number.parseInt(value.slice(1), 16)
-        : Number.parseInt(value, 10);
+      const codePoint =
+        value.startsWith("x") || value.startsWith("X")
+          ? Number.parseInt(value.slice(1), 16)
+          : Number.parseInt(value, 10);
 
       if (!Number.isFinite(codePoint)) {
         return entity;
@@ -167,7 +168,7 @@ export function sanitizeRichText(input: string): string {
 
 export function formatPresentation(
   presentation: Presentation,
-  descriptionLimit?: number
+  descriptionLimit?: number,
 ): FormattedPresentation {
   const summary = sanitizeRichText(presentation.description);
 
@@ -204,19 +205,22 @@ export function formatPresentation(
 
 export function formatPresentationsResponse(
   response: PresentationsResponse,
-  options?: Pick<FormatEventOptions, "presentationDescriptionLimit">
+  options?: Pick<FormatEventOptions, "presentationDescriptionLimit">,
 ): FormattedPresentationsResponse {
   const descriptionLimit = options?.presentationDescriptionLimit;
 
   return {
     returned: response.presentationsReturned,
     presentations: response.presentations.map((presentation) =>
-      formatPresentation(presentation, descriptionLimit)
+      formatPresentation(presentation, descriptionLimit),
     ),
   };
 }
 
-export function formatEvent(event: Event, options?: FormatEventOptions): FormattedEvent {
+export function formatEvent(
+  event: Event,
+  options?: FormatEventOptions,
+): FormattedEvent {
   const descriptionLimit = options?.descriptionLimit;
   const catchPhraseLimit = options?.catchPhraseLimit;
   const presentationDescriptionLimit = options?.presentationDescriptionLimit;
@@ -309,8 +313,9 @@ export function formatEvent(event: Event, options?: FormatEventOptions): Formatt
   };
 
   if (eventWithPresentations.presentations?.length) {
-    formatted.presentations = eventWithPresentations.presentations.map((presentation) =>
-      formatPresentation(presentation, presentationDescriptionLimit)
+    formatted.presentations = eventWithPresentations.presentations.map(
+      (presentation) =>
+        formatPresentation(presentation, presentationDescriptionLimit),
     );
   }
 
@@ -319,7 +324,7 @@ export function formatEvent(event: Event, options?: FormatEventOptions): Formatt
 
 export function formatEventsResponse(
   response: EventsResponse,
-  options?: FormatEventOptions
+  options?: FormatEventOptions,
 ): FormattedEventsResponse {
   return {
     returned: response.eventsReturned,
@@ -330,8 +335,10 @@ export function formatEventsResponse(
 }
 
 export function formatEventList(
-  events: (Event & { presentations?: PresentationsResponse["presentations"] })[],
-  options?: FormatEventOptions
+  events: (Event & {
+    presentations?: PresentationsResponse["presentations"];
+  })[],
+  options?: FormatEventOptions,
 ): FormattedEvent[] {
   return events.map((event) => formatEvent(event, options));
 }

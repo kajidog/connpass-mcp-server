@@ -7,7 +7,8 @@ import type {
   ResourceTemplate,
 } from "@modelcontextprotocol/sdk/types.js";
 
-export const CONNPASS_EVENTS_WIDGET_URI = "ui://connpass/widgets/events-carousel.html";
+export const CONNPASS_EVENTS_WIDGET_URI =
+  "ui://connpass/widgets/events-carousel.html";
 
 function buildWidgetMeta() {
   return {
@@ -32,7 +33,7 @@ function loadHtmlDocument(): string {
   }
 
   throw new Error(
-    "Connpass widget HTML could not be located. Ensure connpass-events.html is copied next to the compiled widgets or run the build step."
+    "Connpass widget HTML could not be located. Ensure connpass-events.html is copied next to the compiled widgets or run the build step.",
   );
 }
 
@@ -43,14 +44,16 @@ export const connpassEventsWidget = {
   resource: {
     uri: CONNPASS_EVENTS_WIDGET_URI,
     name: "Connpass events carousel",
-    description: "Inline carousel widget with fullscreen detail view for Connpass events",
+    description:
+      "Inline carousel widget with fullscreen detail view for Connpass events",
     mimeType: "text/html+sky",
     _meta: buildWidgetMeta(),
   } satisfies Resource,
   resourceTemplate: {
     uriTemplate: CONNPASS_EVENTS_WIDGET_URI,
     name: "Connpass events carousel",
-    description: "Inline carousel widget with fullscreen detail view for Connpass events",
+    description:
+      "Inline carousel widget with fullscreen detail view for Connpass events",
     mimeType: "text/html+sky",
     _meta: buildWidgetMeta(),
   } satisfies ResourceTemplate,

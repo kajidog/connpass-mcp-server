@@ -1,8 +1,12 @@
-import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
+import {
+  type IncomingMessage,
+  type ServerResponse,
+  createServer,
+} from "node:http";
 import { URL } from "node:url";
 
-import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import type { Server as McpServer } from "@modelcontextprotocol/sdk/server/index.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 
 export type Logger = {
   info?: (...args: unknown[]) => void;
@@ -90,7 +94,7 @@ export async function startSseServer(options: StartSseServerOptions) {
   const handleMessagePost = async (
     req: IncomingMessage,
     res: ServerResponse,
-    url: URL
+    url: URL,
   ) => {
     if (enableCors) {
       setCorsHeaders(res);
@@ -168,11 +172,11 @@ export async function startSseServer(options: StartSseServerOptions) {
   await new Promise<void>((resolve) => {
     httpServer.listen(port, () => {
       log.info(
-        `Connpass MCP Server listening on http://localhost:${port} (SSE transport)`
+        `Connpass MCP Server listening on http://localhost:${port} (SSE transport)`,
       );
       log.info(`  SSE stream: GET http://localhost:${port}${ssePath}`);
       log.info(
-        `  Message endpoint: POST http://localhost:${port}${messagePath}?sessionId=...`
+        `  Message endpoint: POST http://localhost:${port}${messagePath}?sessionId=...`,
       );
       resolve();
     });
@@ -186,7 +190,7 @@ export async function startSseServer(options: StartSseServerOptions) {
           sessions.delete(transport.sessionId);
           await transport.close();
           await server.close();
-        })
+        }),
       ).catch((error) => {
         log.error("Failed to shut down sessions:", error);
       });
