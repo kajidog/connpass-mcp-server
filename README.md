@@ -32,6 +32,19 @@ Connpass の API を MCP (Model Context Protocol) 経由で利用するための
   <p><em>詳細ボタンでセッション情報や主催者情報を確認</em></p>
 </div>
 
+## デプロイ方法
+
+### Cloudflare Workers（推奨）
+
+エッジで高速に動作するサーバーレスデプロイ。詳細は [packages/cloudflare-worker/README.md](packages/cloudflare-worker/README.md) を参照してください。
+
+```bash
+cd packages/cloudflare-worker
+pnpm deploy
+```
+
+### ローカル環境
+
 ## クイックセットアップ
 
 ### npx で即座に起動

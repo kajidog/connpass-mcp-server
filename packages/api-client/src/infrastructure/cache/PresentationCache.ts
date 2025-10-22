@@ -1,6 +1,7 @@
 import { promises as fs } from 'fs';
 import path from 'path';
 import { PresentationsResponse } from '../../domain/entities';
+import type { IPresentationCache } from './IPresentationCache.js';
 
 interface CacheEntry {
   expiresAt: number;
@@ -13,7 +14,7 @@ export interface PresentationCacheOptions {
   enabled: boolean;
 }
 
-export class PresentationCache {
+export class PresentationCache implements IPresentationCache {
   private cache = new Map<number, CacheEntry>();
   private isLoaded = false;
   private readonly filePath: string;

@@ -1,0 +1,28 @@
+name = "connpass-mcp-server"
+main = "src/worker.ts"
+compatibility_date = "2024-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+# KV Namespace for caching presentations
+[[kv_namespaces]]
+binding = "CONNPASS_CACHE"
+id = "your-kv-namespace-id"
+preview_id = "your-preview-kv-namespace-id"
+
+# Environment variables
+[vars]
+CONNPASS_RATE_LIMIT_ENABLED = "true"
+CONNPASS_RATE_LIMIT_DELAY_MS = "1000"
+CONNPASS_PRESENTATION_CACHE_ENABLED = "true"
+CONNPASS_PRESENTATION_CACHE_TTL_MS = "3600000"
+CONNPASS_ENABLE_APPS_SDK_OUTPUT = "false"
+
+# Secrets (use `wrangler secret put` to set these)
+# CONNPASS_API_KEY
+
+# Build configuration
+[build]
+command = "pnpm build"
+
+[build.upload]
+format = "service-worker"

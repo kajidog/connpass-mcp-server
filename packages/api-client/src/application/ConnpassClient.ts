@@ -12,6 +12,7 @@ import {
   UsersResponse,
 } from '../domain/entities';
 import { PresentationCache } from '../infrastructure/cache/PresentationCache';
+import type { IPresentationCache } from '../infrastructure/cache/IPresentationCache.js';
 
 export interface ConnpassClientConfig {
   apiKey: string;
@@ -22,6 +23,7 @@ export interface ConnpassClientConfig {
   enablePresentationCache?: boolean;
   presentationCacheTtlMs?: number;
   presentationCachePath?: string;
+  presentationCache?: IPresentationCache;
 }
 
 export class ConnpassClient {
@@ -42,7 +44,8 @@ export class ConnpassClient {
       rateLimitEnabled: config.rateLimitEnabled,
     });
 
-    const presentationCache = new PresentationCache({
+    // Use custom cache if provided, otherwise create default file-based cache
+    const presentationCache = config.presentationCache ?? new PresentationCache({
       enabled: this.resolveCacheEnabled(config.enablePresentationCache),
       ttlMs: this.resolveCacheTtl(config.presentationCacheTtlMs),
       filePath: this.resolveCachePath(config.presentationCachePath),

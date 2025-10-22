@@ -1,0 +1,32 @@
+{
+  "name": "@kajidog/connpass-mcp-worker",
+  "version": "0.1.0",
+  "description": "Cloudflare Worker for Connpass MCP Server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "@kajidog/connpass-api-client": "workspace:*",
+    "@kajidog/connpass-mcp-server": "workspace:*",
+    "@modelcontextprotocol/sdk": "^1.0.0"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "wrangler": "^3.94.0"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "connpass",
+    "cloudflare-workers"
+  ],
+  "license": "MIT"
+}

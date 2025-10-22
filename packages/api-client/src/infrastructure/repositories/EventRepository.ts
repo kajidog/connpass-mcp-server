@@ -2,10 +2,10 @@ import { IEventRepository } from '../../domain/repositories';
 import { Event, EventSearchParams, EventsResponse, PresentationsResponse } from '../../domain/entities';
 import { HttpClient } from '../http/HttpClient';
 import { Validators } from '../../domain/utils/validators';
-import { PresentationCache } from '../cache/PresentationCache';
+import type { IPresentationCache } from '../cache/IPresentationCache.js';
 
 export class EventRepository implements IEventRepository {
-  constructor(private httpClient: HttpClient, private presentationCache?: PresentationCache) {}
+  constructor(private httpClient: HttpClient, private presentationCache?: IPresentationCache) {}
 
   async searchEvents(params: EventSearchParams): Promise<EventsResponse> {
     Validators.validateEventSearchParams(params);
