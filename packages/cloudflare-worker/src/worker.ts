@@ -118,8 +118,10 @@ async function handleMCPRequest(request: JSONRPCRequest, env: Env): Promise<any>
 
   // Import tools from mcp-server source
   const { tools, handleToolCall } = await import("../../mcp-server/src/tools/index.js");
-  const { buildCallToolResult } = await import("../../mcp-server/src/apps-sdk.js");
-  const { listResources, listResourceTemplates, getResourceContent } = await import("../../mcp-server/src/widgets/index.js");
+
+  // Use Workers-specific implementations (no filesystem access)
+  const { buildCallToolResult } = await import("./apps-sdk.js");
+  const { listResources, listResourceTemplates, getResourceContent } = await import("./widgets.js");
 
   const connpassClient = createConnpassClient(env);
   const appsSdkOutputEnabled = env.CONNPASS_ENABLE_APPS_SDK_OUTPUT?.toLowerCase() === "true";
