@@ -11,10 +11,17 @@ preview_id = "your-preview-kv-namespace-id"
 
 # Environment variables
 [vars]
+# Rate limiting: Connpass API has 1 req/sec limit
+# NOTE: In high-traffic scenarios, multiple Worker instances may exceed the limit.
+# Consider setting CONNPASS_RATE_LIMIT_ENABLED = "false" and handling API errors instead.
 CONNPASS_RATE_LIMIT_ENABLED = "true"
 CONNPASS_RATE_LIMIT_DELAY_MS = "1000"
+
+# Presentation cache (uses KV)
 CONNPASS_PRESENTATION_CACHE_ENABLED = "true"
 CONNPASS_PRESENTATION_CACHE_TTL_MS = "3600000"
+
+# Apps SDK output (widgets disabled in Workers by default)
 CONNPASS_ENABLE_APPS_SDK_OUTPUT = "false"
 
 # Secrets (use `wrangler secret put` to set these)

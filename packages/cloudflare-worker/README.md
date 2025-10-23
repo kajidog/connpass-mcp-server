@@ -148,6 +148,46 @@ pnpm tail
 
 リアルタイムでWorkerのログを確認できます。
 
+## 重要な注意事項
+
+### レート制限について
+
+Connpass APIは**1秒間に1リクエスト**のレート制限があります。
+
+**Cloudflare Workers環境での課題：**
+- Workersは複数インスタンスが並行実行されます
+- 各インスタンスが独立してレート制限を管理するため、全体としてレート制限を超える可能性があります
+- 特に高トラフィック時に問題になる可能性があります
+
+**推奨設定：**
+
+```toml
+# wrangler.toml
+
+# デモ・低トラフィック用途（デフォルト）
+[vars]
+CONNPASS_RATE_LIMIT_ENABLED = "true"
+CONNPASS_RATE_LIMIT_DELAY_MS = "1000"
+
+# 高トラフィック用途
+# レート制限を無効化し、Connpass API側のエラーハンドリングに任せる
+[vars]
+CONNPASS_RATE_LIMIT_ENABLED = "false"
+```
+
+**CPU時間について：**
+- `await`での待機はCPU時間にカウントされません（Wall clock timeのみ）
+- 1秒待機してもCPU timeは数ms程度なので、無料プランでも問題ありません
+- ただし、`includePresentations=true`で複数イベントを取得する場合は注意が必要です
+
+### ウィジェット機能
+
+Cloudflare WorkersではNode.jsのファイルシステムAPIが使えないため、ウィジェット機能は無効化されています。
+
+- `CONNPASS_ENABLE_APPS_SDK_OUTPUT`はデフォルトで`false`
+- `structuredContent`は返されますが、HTMLウィジェットは表示されません
+- 必要に応じてHTMLを文字列定数として埋め込むことで対応可能です
+
 ## 制限事項
 
 ### Cloudflare Workersの制限
