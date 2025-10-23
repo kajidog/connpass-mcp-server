@@ -116,6 +116,24 @@ export default {
 async function handleMCPRequest(request: JSONRPCRequest, env: Env): Promise<any> {
   const { method, params, id } = request;
 
+  // Forward Worker env variables to process.env so mcp-server config.ts can read them
+  // This must happen before dynamic imports that depend on these environment variables
+  if (env.CONNPASS_DEFAULT_USER_ID !== undefined) {
+    process.env.CONNPASS_DEFAULT_USER_ID = env.CONNPASS_DEFAULT_USER_ID;
+  }
+  if (env.CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT !== undefined) {
+    process.env.CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT = env.CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT;
+  }
+  if (env.CONNPASS_ENABLE_APPS_SDK_OUTPUT !== undefined) {
+    process.env.CONNPASS_ENABLE_APPS_SDK_OUTPUT = env.CONNPASS_ENABLE_APPS_SDK_OUTPUT;
+  }
+  if (env.CONNPASS_RATE_LIMIT_ENABLED !== undefined) {
+    process.env.CONNPASS_RATE_LIMIT_ENABLED = env.CONNPASS_RATE_LIMIT_ENABLED;
+  }
+  if (env.CONNPASS_RATE_LIMIT_DELAY_MS !== undefined) {
+    process.env.CONNPASS_RATE_LIMIT_DELAY_MS = env.CONNPASS_RATE_LIMIT_DELAY_MS;
+  }
+
   // Import tools from mcp-server source
   const { tools, handleToolCall } = await import("../../mcp-server/src/tools/index.js");
 

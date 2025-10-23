@@ -98,8 +98,8 @@ pnpm deploy
 | `CONNPASS_PRESENTATION_CACHE_ENABLED` | プレゼンキャッシュを有効化 | `true` |
 | `CONNPASS_PRESENTATION_CACHE_TTL_MS` | キャッシュの有効期限（ミリ秒） | `3600000` (1時間) |
 | `CONNPASS_ENABLE_APPS_SDK_OUTPUT` | Apps SDK出力を有効化 | `false` |
-| `CONNPASS_DEFAULT_USER_ID` | デフォルトユーザーID | 未設定 |
-| `CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT` | プレゼンを含めるか | 未設定 |
+| `CONNPASS_DEFAULT_USER_ID` | ユーザー関連ツールで使用するデフォルトユーザーID | 未設定 |
+| `CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT` | イベント検索時にプレゼン情報をデフォルトで含めるか | 未設定 |
 
 ### シークレット
 
