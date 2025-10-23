@@ -22,11 +22,6 @@
     "typescript": "^5.0.0",
     "wrangler": "^3.94.0"
   },
-  "keywords": [
-    "mcp",
-    "mcp-server",
-    "connpass",
-    "cloudflare-workers"
-  ],
+  "keywords": ["mcp", "mcp-server", "connpass", "cloudflare-workers"],
   "license": "MIT"
 }
