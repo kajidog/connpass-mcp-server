@@ -24,6 +24,10 @@ CONNPASS_PRESENTATION_CACHE_TTL_MS = "3600000"
 # Apps SDK output (widgets disabled in Workers by default)
 CONNPASS_ENABLE_APPS_SDK_OUTPUT = "false"
 
+# Tool defaults
+# CONNPASS_DEFAULT_USER_ID = ""  # Default user ID for user-related tools
+# CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT = "false"  # Include presentations by default in event search
+
 # Secrets (use `wrangler secret put` to set these)
 # CONNPASS_API_KEY
 
