@@ -1,0 +1,57 @@
+:root {
+  color-scheme: light;
+  font-family: "Inter", "Noto Sans JP", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --connpass-surface: #0d0d0d0d;
+  --connpass-card-bg: #fff;
+  --connpass-card-border: rgba(17, 17, 17, 0.08);
+  --connpass-card-shadow: rgba(17, 17, 17, 0.06);
+  --connpass-text-primary: rgba(17, 17, 17, 0.92);
+  --connpass-text-secondary: rgba(17, 17, 17, 0.6);
+  --connpass-text-muted: rgba(17, 17, 17, 0.45);
+  --connpass-button-bg: #111;
+  --connpass-button-bg-hover: rgba(17, 17, 17, 0.88);
+  --connpass-button-text: #fff;
+  --connpass-accent: #2563eb;
+  --connpass-badge-bg: rgba(255, 173, 51, 0.18);
+  --connpass-badge-text: #a35400;
+  background-color: transparent;
+  color: var(--connpass-text-primary);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+    --connpass-surface: #333;
+    --connpass-card-bg: rgba(48, 49, 55, 0.92);
+    --connpass-card-border: rgba(255, 255, 255, 0.08);
+    --connpass-card-shadow: rgba(0, 0, 0, 0.45);
+    --connpass-text-primary: rgba(255, 255, 255, 0.92);
+    --connpass-text-secondary: rgba(255, 255, 255, 0.7);
+    --connpass-text-muted: rgba(255, 255, 255, 0.5);
+    --connpass-button-bg: rgba(255, 255, 255, 0.12);
+    --connpass-button-bg-hover: rgba(255, 255, 255, 0.2);
+    --connpass-button-text: rgba(255, 255, 255, 0.96);
+    --connpass-accent: #60a5fa;
+    --connpass-badge-bg: rgba(251, 191, 36, 0.2);
+    --connpass-badge-text: rgba(251, 191, 36, 0.92);
+  }
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--connpass-text-primary);
+}
+
+#root {
+  min-height: 100vh;
+}

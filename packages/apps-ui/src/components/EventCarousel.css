@@ -1,0 +1,61 @@
+.connpass-carousel {
+  position: relative;
+  width: 100%;
+  padding: 18px 16px;
+  background: var(--connpass-surface);
+  box-shadow: 0 12px 30px var(--connpass-card-shadow);
+}
+
+.connpass-carousel__scroller {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 6px;
+  background: var(--connpass-surface);
+}
+
+.connpass-carousel__scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.connpass-carousel__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: var(--connpass-card-bg);
+  box-shadow: 0 14px 22px var(--connpass-card-shadow);
+  border: 1px solid var(--connpass-card-border);
+  cursor: pointer;
+}
+
+.connpass-carousel__nav:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.connpass-carousel__nav--prev {
+  left: 8px;
+}
+
+.connpass-carousel__nav--next {
+  right: 8px;
+}
+
+@media (max-width: 480px) {
+  .connpass-carousel {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .connpass-carousel__nav {
+    display: none;
+  }
+}

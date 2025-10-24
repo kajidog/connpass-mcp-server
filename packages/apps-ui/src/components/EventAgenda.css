@@ -1,0 +1,190 @@
+.connpass-agenda {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 18px 16px 24px;
+  background: var(--connpass-surface);
+}
+
+.connpass-agenda__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.connpass-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--connpass-accent) 18%, transparent);
+  color: var(--connpass-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.connpass-agenda__section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.connpass-agenda__section-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.connpass-agenda__section-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--connpass-text-primary);
+}
+
+.connpass-agenda__section-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--connpass-text-secondary);
+}
+
+.connpass-agenda__empty {
+  border-radius: 16px;
+  border: 1px dashed var(--connpass-card-border);
+  padding: 20px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--connpass-text-secondary);
+  background: color-mix(in srgb, var(--connpass-card-bg) 65%, transparent);
+}
+
+.connpass-agenda__list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.connpass-agenda__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--connpass-text-muted);
+  padding-top: 8px;
+}
+
+.connpass-list-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-radius: 18px;
+  border: 1px solid var(--connpass-card-border);
+  background: var(--connpass-card-bg);
+  box-shadow: 0 18px 35px var(--connpass-card-shadow);
+  padding: 16px;
+}
+
+.connpass-list-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--connpass-card-border);
+}
+
+.connpass-list-card__header-media {
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--connpass-accent) 14%, transparent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.connpass-list-card__header-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.connpass-list-card__media-fallback {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--connpass-text-secondary);
+  text-align: center;
+  padding: 0 4px;
+}
+
+.connpass-list-card__header-text {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.connpass-list-card__title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  color: var(--connpass-text-primary);
+  line-height: 1.3;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connpass-list-card__owner {
+  font-size: 12px;
+  color: var(--connpass-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connpass-list-card__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.connpass-list-card__catchphrase {
+  margin: 0;
+  font-size: 13px;
+  color: var(--connpass-text-secondary);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.connpass-list-card__meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.connpass-list-card__meta .connpass-row {
+  margin: 0;
+}
+
+.connpass-list-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: auto;
+}
+
+@media (max-width: 480px) {
+  .connpass-list-card {
+    flex-direction: column;
+  }
+}
