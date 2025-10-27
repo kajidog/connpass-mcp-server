@@ -137,6 +137,17 @@ export async function startSseServer(options: StartSseServerOptions) {
 
     const normalizedPath = normalizePath(url.pathname);
 
+    if (req.method === "GET" && normalizedPath === "/healthz") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          transport: "sse",
+        }),
+      );
+      return;
+    }
+
     if (
       req.method === "OPTIONS" &&
       (normalizedPath === ssePath || normalizedPath === messagePath)

@@ -4,6 +4,7 @@ import {
   type ServerResponse,
   createServer,
 } from "node:http";
+import { URL } from "node:url";
 
 import type { Server as McpServer } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -59,6 +60,22 @@ export async function startHttpServer(options: StartHttpServerOptions) {
       return;
     }
 
+    const requestUrl = req.url
+      ? new URL(req.url, `http://${req.headers.host ?? "localhost"}`)
+      : undefined;
+    const pathname = requestUrl?.pathname ?? "/";
+
+    if (req.method === "GET" && pathname === "/healthz") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(
+        JSON.stringify({
+          status: "ok",
+          transport: "http",
+        }),
+      );
+      return;
+    }
+
     if (
       req.method !== "POST" &&
       req.method !== "GET" &&
@@ -72,6 +89,11 @@ export async function startHttpServer(options: StartHttpServerOptions) {
 
     if (req.method === "GET") {
       // Handle GET requests for SSE streams
+      if (pathname === "/healthz") {
+        res.writeHead(405).end("Method Not Allowed");
+        return;
+      }
+
       if (!sessionId || !sessions.has(sessionId)) {
         res.writeHead(400).end("Invalid or missing session ID");
         return;
