@@ -8,6 +8,7 @@ export interface HttpClientConfig {
   timeout?: number;
   rateLimitDelay?: number;
   rateLimitEnabled?: boolean;
+  userAgent: string;
 }
 
 export class HttpClient {
@@ -28,6 +29,7 @@ export class HttpClient {
       headers: {
         'X-API-Key': config.apiKey,
         'Content-Type': 'application/json',
+        'User-Agent': config.userAgent,
       },
       paramsSerializer: params => {
         return stringify(params, { arrayFormat: 'repeat' });

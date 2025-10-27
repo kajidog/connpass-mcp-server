@@ -1,4 +1,5 @@
 import path from 'path';
+import pkg from '../../package.json';
 import { HttpClient } from '../infrastructure/http/HttpClient';
 import { EventRepository, GroupRepository, UserRepository } from '../infrastructure/repositories';
 import { EventService, GroupService, UserService } from './services';
@@ -22,6 +23,7 @@ export interface ConnpassClientConfig {
   enablePresentationCache?: boolean;
   presentationCacheTtlMs?: number;
   presentationCachePath?: string;
+  userAgent?: string;
 }
 
 export class ConnpassClient {
@@ -40,6 +42,7 @@ export class ConnpassClient {
       timeout: config.timeout,
       rateLimitDelay: config.rateLimitDelay,
       rateLimitEnabled: config.rateLimitEnabled,
+      userAgent: this.resolveUserAgent(config.userAgent),
     });
 
     const presentationCache = new PresentationCache({
@@ -155,5 +158,19 @@ export class ConnpassClient {
     }
 
     return path.join(process.cwd(), 'data', 'presentation-cache.json');
+  }
+
+  private resolveUserAgent(explicit?: string): string {
+    if (explicit?.trim()) {
+      return explicit;
+    }
+
+    const fromEnv = process.env.CONNPASS_USER_AGENT;
+    if (fromEnv?.trim()) {
+      return fromEnv;
+    }
+
+    const version = pkg.version ?? '0.0.0';
+    return `@kajidog/connpass-api-client/${version}`;
   }
 }
