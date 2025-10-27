@@ -29,8 +29,19 @@ import {
 const rateLimitEnabled = getRateLimitEnabled();
 const rateLimitDelay = getRateLimitDelayMs();
 
+const envApiKey = process.env.CONNPASS_API_KEY;
+if (!envApiKey) {
+  console.warn(
+    "[mcp-server] CONNPASS_API_KEY not set. Using dummy-key (Connpass API will reject most requests)",
+  );
+} else {
+  console.log(
+    `[mcp-server] CONNPASS_API_KEY detected (length: ${envApiKey.length}).`,
+  );
+}
+
 const connpassClient = new ConnpassClient({
-  apiKey: process.env.CONNPASS_API_KEY || "dummy-key",
+  apiKey: envApiKey || "dummy-key",
   ...(rateLimitEnabled !== undefined ? { rateLimitEnabled } : {}),
   ...(rateLimitDelay !== undefined ? { rateLimitDelay } : {}),
 });
