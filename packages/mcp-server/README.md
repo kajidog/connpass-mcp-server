@@ -153,15 +153,15 @@ Examples:
   "name": "search_events",
   "arguments": {
     "query": "React 勉強会",
-    "from": "next Monday",
-    "to": "next Friday",
+    "from": "2025-11-01",
+    "to": "2025-11-07",
     "prefectures": "東京都",
     "sort": "start-date-asc"
   }
 }
 ```
 
-- 日付は `"2024-05-01"` のような ISO 形式に加えて、`today` / `tomorrow` / `next Monday` などの自然言語も指定できます。
+- 日付は `"2025-11-01"` のような YYYY-MM-DD 形式、または `"20251101"` のような YYYYMMDD 形式で指定します。
 - `prefectures` や `on` は単一文字列でも配列でも指定可能です。
 
 ### グループ検索（例）
