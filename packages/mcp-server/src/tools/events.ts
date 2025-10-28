@@ -269,7 +269,8 @@ const eventToolsInternal: Tool[] = [
         },
         to: {
           type: "string",
-          description: "Inclusive end date in YYYY-MM-DD or YYYYMMDD format for the date range",
+          description:
+            "Inclusive end date in YYYY-MM-DD or YYYYMMDD format for the date range",
         },
         participantNickname: {
           type: "string",

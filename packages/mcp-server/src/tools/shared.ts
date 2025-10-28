@@ -72,7 +72,9 @@ export function parseDateInput(
     }
   }
 
-  throw new Error(`Invalid date format: ${input}. Expected YYYY-MM-DD or YYYYMMDD format.`);
+  throw new Error(
+    `Invalid date format: ${input}. Expected YYYY-MM-DD or YYYYMMDD format.`,
+  );
 }
 
 export function toYmdArray(value?: string | string[]): string[] | undefined {
