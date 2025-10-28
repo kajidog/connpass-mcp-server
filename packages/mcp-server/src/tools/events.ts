@@ -55,21 +55,21 @@ const EventSearchInputSchema = z.object({
   on: z
     .union([z.string().min(1), z.array(z.string().min(1))])
     .describe(
-      "Specific date(s) to match. Natural language like 'today' or '2024-12-24' is accepted",
+      "Specific date(s) to match. Format: YYYY-MM-DD or YYYYMMDD (e.g., '2024-12-24' or '20241224')",
     )
     .optional(),
   from: z
     .string()
     .min(1)
     .describe(
-      "Start of the date range (inclusive). Natural language like 'next Monday' works when Date.parse can understand it",
+      "Start of the date range (inclusive). Format: YYYY-MM-DD or YYYYMMDD (e.g., '2024-12-01')",
     )
     .optional(),
   to: z
     .string()
     .min(1)
     .describe(
-      "End of the date range (inclusive). Use together with 'from' for a window",
+      "End of the date range (inclusive). Format: YYYY-MM-DD or YYYYMMDD. Use together with 'from' for a window",
     )
     .optional(),
   participantNickname: z
@@ -240,7 +240,7 @@ const eventToolsInternal: Tool[] = [
   {
     name: "search_events",
     description:
-      "Find Connpass events using natural date phrases and simple filters",
+      "Find Connpass events using date filters and simple search criteria",
     inputSchema: {
       type: "object",
       properties: {
@@ -256,7 +256,7 @@ const eventToolsInternal: Tool[] = [
         },
         on: {
           description:
-            "Specific date(s) like '2024-12-24' or 'today'. Accepts a single string or an array",
+            "Specific date(s) in YYYY-MM-DD or YYYYMMDD format (e.g., '2024-12-24' or '20241224'). Accepts a single string or an array",
           oneOf: [
             { type: "string" },
             { type: "array", items: { type: "string" }, minItems: 1 },
@@ -265,11 +265,12 @@ const eventToolsInternal: Tool[] = [
         from: {
           type: "string",
           description:
-            "Inclusive start date. Natural expressions like 'next Monday' are accepted",
+            "Inclusive start date in YYYY-MM-DD or YYYYMMDD format (e.g., '2024-12-01')",
         },
         to: {
           type: "string",
-          description: "Inclusive end date for the date range",
+          description:
+            "Inclusive end date in YYYY-MM-DD or YYYYMMDD format for the date range",
         },
         participantNickname: {
           type: "string",

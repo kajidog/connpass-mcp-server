@@ -36,20 +36,6 @@ export const USER_SORT_MAP: Record<UserSortKey, 1 | 2 | 3> = {
   "newly-added": 3,
 };
 
-const RELATIVE_DATE_KEYWORDS: Record<string, () => Date> = {
-  today: () => new Date(),
-  tomorrow: () => {
-    const date = new Date();
-    date.setDate(date.getDate() + 1);
-    return date;
-  },
-  yesterday: () => {
-    const date = new Date();
-    date.setDate(date.getDate() - 1);
-    return date;
-  },
-};
-
 function formatAsCompactYmd(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -68,15 +54,12 @@ export function parseDateInput(
   input: string,
   options?: { style?: "compact" | "hyphenated" },
 ): string {
-  const normalized = input.trim().toLowerCase();
-  const relativeFactory = RELATIVE_DATE_KEYWORDS[normalized];
-  if (relativeFactory) {
-    return options?.style === "hyphenated"
-      ? formatAsHyphenatedYmd(relativeFactory())
-      : formatAsCompactYmd(relativeFactory());
-  }
+  const normalized = input.trim();
 
+  // Remove separators (-, /, .) for parsing
   const hyphenFree = normalized.replace(/[-/.]/g, "");
+
+  // Check for YYYYMMDD format (8 digits)
   if (/^\d{8}$/.test(hyphenFree)) {
     const year = Number(hyphenFree.slice(0, 4));
     const month = Number(hyphenFree.slice(4, 6)) - 1;
@@ -89,14 +72,9 @@ export function parseDateInput(
     }
   }
 
-  const parsed = new Date(input);
-  if (!Number.isNaN(parsed.getTime())) {
-    return options?.style === "hyphenated"
-      ? formatAsHyphenatedYmd(parsed)
-      : formatAsCompactYmd(parsed);
-  }
-
-  throw new Error(`Could not understand date input: ${input}`);
+  throw new Error(
+    `Invalid date format: ${input}. Expected YYYY-MM-DD or YYYYMMDD format.`,
+  );
 }
 
 export function toYmdArray(value?: string | string[]): string[] | undefined {
