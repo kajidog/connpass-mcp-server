@@ -11,7 +11,12 @@
       "packages/mcp-server/tsconfig.vitest.json",
       "packages/mcp-server/vitest.config.ts"
     ],
-    "ignore": ["**/dist/**", "**/node_modules/**", "packages/api-client/**"]
+    "ignore": [
+      "**/dist/**",
+      "**/node_modules/**",
+      "packages/api-client/**",
+      ".changeset/**"
+    ]
   },
   "formatter": {
     "enabled": true,
