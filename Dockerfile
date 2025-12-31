@@ -11,6 +11,7 @@ COPY pnpm-workspace.yaml package.json pnpm-lock.yaml ./
 # Copy package files
 COPY packages/api-client/package.json ./packages/api-client/
 COPY packages/mcp-server/package.json ./packages/mcp-server/
+COPY packages/widgets/package.json ./packages/widgets/
 
 # Install dependencies
 RUN pnpm install --frozen-lockfile
@@ -18,6 +19,7 @@ RUN pnpm install --frozen-lockfile
 # Copy source files
 COPY packages/api-client ./packages/api-client
 COPY packages/mcp-server ./packages/mcp-server
+COPY packages/widgets ./packages/widgets
 
 # Build all packages
 RUN pnpm build

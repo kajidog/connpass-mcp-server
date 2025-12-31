@@ -8,7 +8,7 @@
     "connpass-mcp-server": "dist/index.js"
   },
   "scripts": {
-    "build": "tsc -b && node scripts/copy-widgets.cjs",
+    "build": "tsc -b",
     "dev": "tsc -b --watch",
     "start": "node dist/index.js",
     "lint": "biome lint src",

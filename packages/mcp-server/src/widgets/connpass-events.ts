@@ -20,7 +20,11 @@ function buildWidgetMeta() {
 
 function loadHtmlDocument(): string {
   const candidates = [
+    // React widget built by @connpass-mcp/widgets package
+    resolve(__dirname, "../../../widgets/dist/connpass-events.html"),
+    // Fallback: copied to dist during build
     resolve(__dirname, "connpass-events.html"),
+    // Fallback: development source
     resolve(__dirname, "../../src/widgets/connpass-events.html"),
   ];
 
@@ -33,7 +37,7 @@ function loadHtmlDocument(): string {
   }
 
   throw new Error(
-    "Connpass widget HTML could not be located. Ensure connpass-events.html is copied next to the compiled widgets or run the build step.",
+    "Connpass widget HTML could not be located. Run 'pnpm build' in packages/widgets first.",
   );
 }
 

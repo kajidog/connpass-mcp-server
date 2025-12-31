@@ -150,13 +150,19 @@ connpass-in-chatgpt/
 │   │   ├── dist/            # ビルド成果物
 │   │   └── README.md        # API クライアントの詳細ドキュメント
 │   │
-│   └── mcp-server/          # MCP サーバー実装
-│       ├── src/             # MCP サーバーのソースコード
-│       │   ├── tools/       # MCP ツール定義（events, users, groups など）
-│       │   ├── widgets/     # OpenAI Apps SDK 用ウィジェット
-│       │   └── transports/  # SSE トランスポート実装
-│       ├── dist/            # ビルド成果物
-│       └── README.md        # MCP サーバーの詳細ドキュメント
+│   ├── mcp-server/          # MCP サーバー実装
+│   │   ├── src/             # MCP サーバーのソースコード
+│   │   │   ├── tools/       # MCP ツール定義（events, users, groups など）
+│   │   │   ├── widgets/     # ウィジェット読み込みロジック
+│   │   │   └── transports/  # SSE トランスポート実装
+│   │   ├── dist/            # ビルド成果物
+│   │   └── README.md        # MCP サーバーの詳細ドキュメント
+│   │
+│   └── widgets/             # OpenAI Apps SDK 用ウィジェット（React）
+│       ├── src/             # React コンポーネント
+│       │   ├── widgets/     # ウィジェット実装
+│       │   └── hooks/       # カスタムフック
+│       └── dist/            # ビルド成果物（HTML）
 │
 ├── docs/                    # その他ドキュメント
 ├── data/                    # キャッシュデータ保存先（Docker volume）
