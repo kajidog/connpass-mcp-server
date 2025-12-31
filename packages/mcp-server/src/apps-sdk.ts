@@ -72,22 +72,29 @@ export function buildCallToolResult(
     );
     base.structuredContent = buildStructuredContent(toolName, result);
     if (templateUri) {
-      // ★ 重要：content アイテム側にも _meta を付ける
-      contentItem._meta = {
-        ...(contentItem._meta ?? {}),
+      const widgetMeta = {
         "openai/outputTemplate": templateUri,
         "openai/resultCanProduceWidget": true,
         "openai/widgetAccessible": true,
         "openai/widgetCategory": "carousel",
+        "openai/widgetDomain": "connpass",
+        "openai/widgetCSP": {
+          connect_domains: ["https://connpass.com"],
+          resource_domains: ["https://connpass.com"],
+          redirect_domains: ["https://connpass.com"],
+        },
+      };
+
+      // ★ 重要：content アイテム側にも _meta を付ける
+      contentItem._meta = {
+        ...(contentItem._meta ?? {}),
+        ...widgetMeta,
       } as Record<string, unknown>;
 
       // 互換性のため、従来通り top-level にも残しておく（不要なら削除OK）
       base._meta = {
         ...(base._meta ?? {}),
-        "openai/outputTemplate": templateUri,
-        "openai/resultCanProduceWidget": true,
-        "openai/widgetAccessible": true,
-        "openai/widgetCategory": "carousel",
+        ...widgetMeta,
       } as Record<string, unknown>;
 
       console.log("[apps-sdk] widget meta", contentItem._meta);

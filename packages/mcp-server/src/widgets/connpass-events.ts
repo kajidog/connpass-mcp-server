@@ -15,6 +15,12 @@ function buildWidgetMeta() {
     "openai/outputTemplate": CONNPASS_EVENTS_WIDGET_URI,
     "openai/widgetAccessible": true,
     "openai/resultCanProduceWidget": true,
+    "openai/widgetDomain": "connpass",
+    "openai/widgetCSP": {
+      connect_domains: ["https://connpass.com"],
+      resource_domains: ["https://connpass.com"],
+      redirect_domains: ["https://connpass.com"],
+    },
   } as const;
 }
 
