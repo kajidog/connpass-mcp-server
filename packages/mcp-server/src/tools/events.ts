@@ -12,6 +12,7 @@ import {
   isAppsSdkOutputEnabled,
 } from "../config.js";
 import { CONNPASS_EVENTS_WIDGET_URI } from "../widgets/connpass-events.js";
+import { CONNPASS_SCHEDULE_WIDGET_URI } from "../widgets/connpass-schedule.js";
 import {
   FormatEventOptions,
   formatEventList,
@@ -36,6 +37,17 @@ function buildEventsWidgetMeta() {
     "openai/widgetCategory": "carousel",
     "openai/toolInvocation/invoking": "Connpassイベントを検索中…",
     "openai/toolInvocation/invoked": "Connpassイベントを表示しました",
+  } as const;
+}
+
+function buildScheduleWidgetMeta() {
+  return {
+    "openai/outputTemplate": CONNPASS_SCHEDULE_WIDGET_URI,
+    "openai/resultCanProduceWidget": true,
+    "openai/widgetAccessible": true,
+    "openai/widgetCategory": "list",
+    "openai/toolInvocation/invoking": "スケジュールを取得中…",
+    "openai/toolInvocation/invoked": "スケジュールを表示しました",
   } as const;
 }
 
@@ -328,9 +340,9 @@ const eventToolsInternal: Tool[] = [
     },
   },
   {
-    name: "get_my_upcoming_events",
+    name: "search_schedule",
     description:
-      "Get today's and upcoming events for the default or specified user",
+      "Search user's schedule - today's and upcoming Connpass events. Use this when asking about schedules, appointments, or what events are coming up.",
     inputSchema: {
       type: "object",
       properties: {
@@ -363,7 +375,7 @@ const eventToolsInternal: Tool[] = [
         },
       },
     },
-    _meta: buildEventsWidgetMeta(),
+    _meta: buildScheduleWidgetMeta(),
   },
 ];
 
@@ -379,7 +391,7 @@ const eventHandlers = {
     const response = await connpassClient.getEventPresentations(eventId);
     return formatPresentationsResponse(response, resolveFormatOptions());
   },
-  async get_my_upcoming_events(args: unknown, connpassClient: ConnpassClient) {
+  async search_schedule(args: unknown, connpassClient: ConnpassClient) {
     const parsed = MyUpcomingEventsInputSchema.parse(args ?? {});
 
     let resolvedUserId: number | undefined =

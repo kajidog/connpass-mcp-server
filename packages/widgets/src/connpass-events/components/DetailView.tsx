@@ -103,7 +103,19 @@ export function DetailView({ event, onClose }: DetailViewProps) {
       </header>
 
       {/* Content */}
-      <main className="p-4 pb-24 max-w-3xl mx-auto">
+      <main className="p-4 pb-8 max-w-3xl mx-auto">
+        {/* CTA Button - prominent placement below title */}
+        <section className="mb-6">
+          <button
+            type="button"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-base font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors shadow-lg"
+            onClick={handleOpenExternal}
+          >
+            <ExternalLink size={18} />
+            <span>Connpass でイベントを見る</span>
+          </button>
+        </section>
+
         {/* Meta section */}
         <section className="mb-6">
           <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-4 space-y-1">
@@ -210,21 +222,6 @@ export function DetailView({ event, onClose }: DetailViewProps) {
           <PresentationList presentations={event.presentations} />
         )}
       </main>
-
-      {/* Footer */}
-      <footer
-        className="sticky bottom-0 bg-white/95 dark:bg-zinc-900/95 backdrop-blur border-t border-zinc-200 dark:border-zinc-700 p-4"
-        style={{ paddingBottom: "max(1rem, calc(env(safe-area-inset-bottom) + 4rem))" }}
-      >
-        <button
-          type="button"
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 text-base font-semibold rounded-xl bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-          onClick={handleOpenExternal}
-        >
-          <ExternalLink size={18} />
-          <span>Connpass でイベントを見る</span>
-        </button>
-      </footer>
     </div>
   );
 }

@@ -60,7 +60,7 @@ connpass-mcp-server
 
    > ローカル開発時などで API キーが未設定の場合、`dummy-key` が自動で使用されます。
 
-必要に応じて、デフォルトで参照するユーザー ID を `CONNPASS_DEFAULT_USER_ID` に設定できます。`get_my_upcoming_events` ツールで `userId` を省略した場合に利用されます。
+必要に応じて、デフォルトで参照するユーザー ID を `CONNPASS_DEFAULT_USER_ID` に設定できます。`search_schedule` ツールで `userId` を省略した場合に利用されます。
 
 ## トランスポート方式
 
@@ -119,8 +119,8 @@ Examples:
 | 変数名 | 説明 | 既定値 |
 | --- | --- | --- |
 | `CONNPASS_API_KEY` | Connpass API Key。未設定の場合は `dummy-key` が使われます（本番利用不可）。 | `dummy-key` |
-| `CONNPASS_DEFAULT_USER_ID` | `get_my_upcoming_events` で `userId` を省略したときに使うユーザー ID。 | 未設定 |
-| `CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT` | `get_my_upcoming_events` の `includePresentations` の既定値。`true/false` や `1/0` などで指定。 | 未設定（false と同等） |
+| `CONNPASS_DEFAULT_USER_ID` | `search_schedule` で `userId` を省略したときに使うユーザー ID。 | 未設定 |
+| `CONNPASS_INCLUDE_PRESENTATIONS_DEFAULT` | `search_schedule` の `includePresentations` の既定値。`true/false` や `1/0` などで指定。 | 未設定（false と同等） |
 | `CONNPASS_RATE_LIMIT_ENABLED` | API クライアントのレート制限キューを有効/無効化します。`false` にすると 1 秒間隔の待機をスキップします。 | `true` |
 | `CONNPASS_RATE_LIMIT_DELAY_MS` | レート制限キューが適用する待機時間（ミリ秒）。Connpass 既定は 1000 ミリ秒です。 | `1000` |
 | `CONNPASS_PRESENTATION_CACHE_ENABLED` | プレゼンテーション取得結果をディスクキャッシュするかどうか。 | `true` |
@@ -142,7 +142,7 @@ Examples:
 | `get_user_groups` | 指定ユーザーが所属するグループ一覧 | `userId`, `limit`, `page` |
 | `get_user_attended_events` | 指定ユーザーが参加したイベント一覧 | `userId`, `limit`, `page`, `sort` |
 | `get_user_presenter_events` | 指定ユーザーが登壇したイベント一覧 | `userId`, `limit`, `page`, `sort` |
-| `get_my_upcoming_events` | 今日と指定期間内のイベントを取得（自分の ID を自動使用可能） | `userId`, `nickname`, `daysAhead`, `maxEvents`, `includePresentations` |
+| `search_schedule` | ユーザーのスケジュール（今日と今後のイベント）を検索 | `userId`, `nickname`, `daysAhead`, `maxEvents`, `includePresentations` |
 
 ## シンプルな使い方
 
@@ -190,11 +190,11 @@ Examples:
 }
 ```
 
-### 自分の今日・直近イベント取得（例）
+### スケジュール検索（例）
 
 ```json
 {
-  "name": "get_my_upcoming_events",
+  "name": "search_schedule",
   "arguments": {
     "nickname": "kajidog",
     "daysAhead": 10,
@@ -214,7 +214,7 @@ Examples:
 
 ### Apps SDK 向けウィジェット
 
-- `search_events` または `get_my_upcoming_events` の実行結果には、Inline 表示のカルーセルとフルスクリーン詳細を切り替えられるウィジェットを付与できます。
+- `search_events` の実行結果にはカルーセルウィジェット、`search_schedule` の実行結果にはスケジュールウィジェットが付与されます。どちらもフルスクリーン詳細に切り替え可能です。
 - `CONNPASS_ENABLE_APPS_SDK_OUTPUT=true` を指定すると、`openai/outputTemplate` メタデータが `ui://connpass/widgets/events-carousel` を指し、Apps SDK 側で iframe がレンダリングされます。
 - ウィジェットの HTML は `packages/mcp-server/src/widgets/connpass-events.html` に置いており、`pnpm --filter @kajidog/connpass-mcp-server build` 実行時に `dist/widgets/` へコピーされます。
 - カルーセルでは参加者数バッジや Connpass への外部リンクを表示。`詳細を見る` ボタンを押すと `requestDisplayMode` API で全画面表示に切り替わり、イベント概要・発表セッション・外部リンクを閲覧できます。

@@ -5,7 +5,7 @@ import { getWidgetTemplateForTool } from "./widgets/index.js";
 const TOOL_KIND_MAP = new Map<string, string>([
   ["search_events", "events"],
   ["get_event_presentations", "event_presentations"],
-  ["get_my_upcoming_events", "events"],
+  ["search_schedule", "schedule"],
   ["search_groups", "groups"],
   ["search_users", "users"],
   ["get_user_groups", "groups"],
