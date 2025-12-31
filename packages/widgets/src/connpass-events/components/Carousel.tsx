@@ -7,9 +7,10 @@ import { EventCard } from "./EventCard";
 interface CarouselProps {
   events: ConnpassEvent[];
   onShowDetail: (event: ConnpassEvent) => void;
+  isLoading?: boolean;
 }
 
-export function Carousel({ events, onShowDetail }: CarouselProps) {
+export function Carousel({ events, onShowDetail, isLoading }: CarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     containScroll: "trimSnaps",
@@ -43,6 +44,16 @@ export function Carousel({ events, onShowDetail }: CarouselProps) {
       emblaApi.off("reInit", onSelect);
     };
   }, [emblaApi, onSelect]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center gap-3 min-h-[200px] border border-dashed border-zinc-300 dark:border-zinc-600 rounded-2xl p-6 bg-zinc-50 dark:bg-zinc-800/50 text-zinc-500 dark:text-zinc-400 text-center">
+        <div className="w-6 h-6 border-2 border-zinc-300 dark:border-zinc-600 border-t-blue-500 rounded-full animate-spin" />
+        <p>イベントを検索中...</p>
+      </div>
+    );
+  }
 
   if (events.length === 0) {
     return (

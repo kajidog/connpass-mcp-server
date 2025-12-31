@@ -90,7 +90,8 @@ export function App() {
   }
 
   // Default: carousel view
+  const isLoading = toolOutput == null;
   return (
-    <Carousel events={normalizedOutput.events} onShowDetail={handleShowDetail} />
+    <Carousel events={normalizedOutput.events} onShowDetail={handleShowDetail} isLoading={isLoading} />
   );
 }
