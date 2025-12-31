@@ -80,7 +80,10 @@ export function buildCallToolResult(
         "openai/widgetDomain": "connpass",
         "openai/widgetCSP": {
           connect_domains: ["https://connpass.com"],
-          resource_domains: ["https://connpass.com"],
+          resource_domains: [
+            "https://connpass.com",
+            "https://media.connpass.com",
+          ],
           redirect_domains: ["https://connpass.com"],
         },
       };
