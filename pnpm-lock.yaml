@@ -55,6 +55,9 @@ importers:
         specifier: ^3.22.0
         version: 3.25.76
     devDependencies:
+      '@kajidog/connpass-widgets':
+        specifier: workspace:*
+        version: link:../widgets
       '@types/node':
         specifier: ^20.0.0
         version: 20.19.20

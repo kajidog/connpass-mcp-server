@@ -8,4 +8,5 @@ feat: replace vanilla JS widget with React-based widget
 - Remove old vanilla JS widget (connpass-events.html)
 - Remove copy-widgets.cjs build script
 - Update mcp-server to load React widget from widgets package
+- Add @kajidog/connpass-widgets as devDependency to ensure correct build order
 - Update Dockerfile to include widgets package in build
