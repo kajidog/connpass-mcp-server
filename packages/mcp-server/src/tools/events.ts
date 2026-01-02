@@ -145,12 +145,19 @@ const MyUpcomingEventsInputSchema = z.object({
       "Connpass user nickname. If specified, searches for the user by this nickname",
     )
     .optional(),
-  daysAhead: z
-    .number()
-    .int()
+  fromDate: z
+    .string()
     .min(1)
-    .max(60)
-    .describe("How many days ahead to include (default 7)")
+    .describe(
+      "Start date of the range (inclusive). Format: YYYY-MM-DD or YYYYMMDD (e.g., '2024-12-01'). If omitted, defaults to today.",
+    )
+    .optional(),
+  toDate: z
+    .string()
+    .min(1)
+    .describe(
+      "End date of the range (inclusive). Format: YYYY-MM-DD or YYYYMMDD (e.g., '2024-12-31'). If omitted, defaults to 7 days from fromDate.",
+    )
     .optional(),
   maxEvents: z
     .number()
@@ -190,14 +197,6 @@ function buildEventSearchParams(
 
 function startOfDay(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
-}
-
-function isSameDay(a: Date, b: Date): boolean {
-  return (
-    a.getFullYear() === b.getFullYear() &&
-    a.getMonth() === b.getMonth() &&
-    a.getDate() === b.getDate()
-  );
 }
 
 function formatDateLabel(date: Date): string {
@@ -342,7 +341,7 @@ const eventToolsInternal: Tool[] = [
   {
     name: "search_schedule",
     description:
-      "Search user's schedule - today's and upcoming Connpass events. Use this when asking about schedules, appointments, or what events are coming up.",
+      "Search user's schedule - Connpass events within a specified date range. Use this when asking about schedules, appointments, or what events are coming up.",
     inputSchema: {
       type: "object",
       properties: {
@@ -356,11 +355,15 @@ const eventToolsInternal: Tool[] = [
           description:
             "Connpass user nickname. If specified, searches for the user by this nickname",
         },
-        daysAhead: {
-          type: "integer",
-          minimum: 1,
-          maximum: 60,
-          description: "Include events up to this many days ahead (default 7)",
+        fromDate: {
+          type: "string",
+          description:
+            "Start date of the range (inclusive) in YYYY-MM-DD or YYYYMMDD format (e.g., '2024-12-01'). If omitted, defaults to today.",
+        },
+        toDate: {
+          type: "string",
+          description:
+            "End date of the range (inclusive) in YYYY-MM-DD or YYYYMMDD format (e.g., '2024-12-31'). If omitted, defaults to 7 days from fromDate.",
         },
         maxEvents: {
           type: "integer",
@@ -417,14 +420,22 @@ const eventHandlers = {
       );
     }
 
-    const daysAhead = parsed.daysAhead ?? 7;
     const maxEventsToFetch = parsed.maxEvents ?? 30;
     const includePresentations =
       parsed.includePresentations ?? getDefaultIncludePresentations();
 
+    // Parse date range
     const today = startOfDay(new Date());
-    const rangeEnd = new Date(today);
-    rangeEnd.setDate(rangeEnd.getDate() + daysAhead);
+    const rangeStart = parsed.fromDate
+      ? startOfDay(new Date(parseHyphenatedDate(parsed.fromDate)))
+      : today;
+    const rangeEnd = parsed.toDate
+      ? startOfDay(new Date(parseHyphenatedDate(parsed.toDate)))
+      : (() => {
+          const defaultEnd = new Date(rangeStart);
+          defaultEnd.setDate(defaultEnd.getDate() + 7);
+          return defaultEnd;
+        })();
     rangeEnd.setHours(23, 59, 59, 999);
 
     // If nickname was not already resolved, fetch user info by ID
@@ -444,46 +455,47 @@ const eventHandlers = {
 
     const searchResponse = await connpassClient.searchEvents({
       nickname: userNickname,
-      ymdFrom: formatDateLabel(today),
+      ymdFrom: formatDateLabel(rangeStart),
       ymdTo: formatDateLabel(rangeEnd),
       order: EVENT_SORT_MAP["start-date-asc"],
       count: maxEventsToFetch,
     });
 
-    const todayEvents = searchResponse.events.filter((event) =>
-      isSameDay(new Date(event.startedAt), today),
-    );
-    const upcomingEvents = searchResponse.events.filter(
-      (event) => !isSameDay(new Date(event.startedAt), today),
-    );
+    // Group events by date
+    const eventsByDate = new Map<string, Event[]>();
+    for (const event of searchResponse.events) {
+      const eventDate = formatDateLabel(startOfDay(new Date(event.startedAt)));
+      if (!eventsByDate.has(eventDate)) {
+        eventsByDate.set(eventDate, []);
+      }
+      eventsByDate.get(eventDate)!.push(event);
+    }
 
-    const [enrichedToday, enrichedUpcoming] = await Promise.all([
-      maybeAttachPresentations(
-        todayEvents,
-        includePresentations,
-        connpassClient,
-      ),
-      maybeAttachPresentations(
-        upcomingEvents,
-        includePresentations,
-        connpassClient,
-      ),
-    ]);
+    // Create sections for each date, sorted chronologically
+    const sortedDates = Array.from(eventsByDate.keys()).sort();
+    const sections = await Promise.all(
+      sortedDates.map(async (date) => {
+        const events = eventsByDate.get(date)!;
+        const enrichedEvents = await maybeAttachPresentations(
+          events,
+          includePresentations,
+          connpassClient,
+        );
+        return {
+          date,
+          events: formatEventList(enrichedEvents, resolveFormatOptions()),
+        };
+      }),
+    );
 
     return {
       userId: resolvedUserId,
-      today: {
-        date: formatDateLabel(today),
-        events: formatEventList(enrichedToday, resolveFormatOptions()),
-      },
-      upcoming: {
-        rangeEnd: formatDateLabel(rangeEnd),
-        events: formatEventList(enrichedUpcoming, resolveFormatOptions()),
-      },
+      sections,
       metadata: {
+        fromDate: formatDateLabel(rangeStart),
+        toDate: formatDateLabel(rangeEnd),
         inspected: searchResponse.eventsReturned,
         limit: maxEventsToFetch,
-        daysAhead,
         includePresentations: Boolean(includePresentations),
       },
     };

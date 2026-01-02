@@ -21,8 +21,12 @@ function MetadataChips({
   if (userId != null) {
     chips.push({ label: "ユーザーID", value: userId });
   }
-  if (metadata?.daysAhead != null) {
-    chips.push({ label: "日数", value: `${metadata.daysAhead}日` });
+  if (metadata?.fromDate != null && metadata?.toDate != null) {
+    chips.push({ label: "期間", value: `${metadata.fromDate} ~ ${metadata.toDate}` });
+  } else if (metadata?.fromDate != null) {
+    chips.push({ label: "開始日", value: metadata.fromDate });
+  } else if (metadata?.toDate != null) {
+    chips.push({ label: "終了日", value: metadata.toDate });
   }
   if (metadata?.limit != null) {
     chips.push({ label: "取得件数", value: metadata.limit });

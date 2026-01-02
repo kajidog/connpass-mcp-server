@@ -7,7 +7,7 @@ import type {
   SearchToolOutput,
   AgendaToolOutput,
 } from "../types/events";
-import { formatJapaneseDate, buildUpcomingSubtitle } from "./date-formatting";
+import { formatJapaneseDate } from "./date-formatting";
 
 function sanitizeEventList(value: unknown): ConnpassEvent[] {
   if (!Array.isArray(value)) {
@@ -31,7 +31,8 @@ function isAgendaOutput(data: unknown): data is AgendaToolOutput {
   return (
     data !== null &&
     typeof data === "object" &&
-    ("today" in data || "upcoming" in data)
+    "sections" in data &&
+    Array.isArray((data as AgendaToolOutput).sections)
   );
 }
 
@@ -60,50 +61,32 @@ export function normalizeToolOutput(
   if (isAgendaOutput(rawData)) {
     const userId =
       typeof rawData.userId === "number" ? rawData.userId : null;
-    const todayBlock = rawData.today ?? null;
-    const upcomingBlock = rawData.upcoming ?? null;
-
-    const todayEvents = todayBlock
-      ? sanitizeEventList(todayBlock.events)
-      : [];
-    const upcomingEvents = upcomingBlock
-      ? sanitizeEventList(upcomingBlock.events)
-      : [];
+    const dateSections = rawData.sections ?? [];
 
     const sections: AgendaSection[] = [];
+    const allEvents: ConnpassEvent[] = [];
 
-    if (todayBlock) {
+    for (const dateSection of dateSections) {
+      const events = sanitizeEventList(dateSection.events);
+      allEvents.push(...events);
+
+      const formattedDate = formatJapaneseDate(dateSection.date);
       sections.push({
-        key: "today",
-        title: "本日のイベント",
-        subtitle: formatJapaneseDate(todayBlock.date) || "本日",
-        events: todayEvents,
-        emptyText: "今日は参加予定のイベントがありません。",
+        key: dateSection.date,
+        title: formattedDate || dateSection.date,
+        subtitle: "",
+        events,
+        emptyText: "この日のイベントはありません。",
       });
     }
 
-    if (upcomingBlock) {
-      sections.push({
-        key: "upcoming",
-        title: "今後のイベント",
-        subtitle: buildUpcomingSubtitle({
-          todayDate: todayBlock?.date ?? null,
-          rangeEnd: upcomingBlock.rangeEnd ?? null,
-          daysAhead: metadata?.daysAhead,
-        }),
-        events: upcomingEvents,
-        emptyText: "今後予定されているイベントはありません。",
-      });
-    }
-
-    const combinedEvents = todayEvents.concat(upcomingEvents);
     return {
       variant: "agenda",
-      events: combinedEvents,
+      events: allEvents,
       sections,
       metadata,
       userId,
-      returned: combinedEvents.length,
+      returned: allEvents.length,
     };
   }
 

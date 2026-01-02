@@ -48,19 +48,15 @@ export interface ConnpassEvent {
 }
 
 export interface EventsMetadata {
-  daysAhead?: number;
+  fromDate?: string;
+  toDate?: string;
   limit?: number;
   inspected?: number;
   includePresentations?: boolean;
 }
 
-export interface TodayBlock {
+export interface DateSection {
   date: string;
-  events: ConnpassEvent[];
-}
-
-export interface UpcomingBlock {
-  rangeEnd: string;
   events: ConnpassEvent[];
 }
 
@@ -72,8 +68,7 @@ export interface SearchToolOutput {
 
 export interface AgendaToolOutput {
   userId: number;
-  today?: TodayBlock;
-  upcoming?: UpcomingBlock;
+  sections: DateSection[];
   metadata?: EventsMetadata;
 }
 
