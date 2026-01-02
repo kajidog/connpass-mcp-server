@@ -13,6 +13,11 @@ const TOOL_KIND_MAP = new Map<string, string>([
   ["get_user_presenter_events", "events"],
 ]);
 
+const TOOL_WIDGET_CATEGORY_MAP = new Map<string, string>([
+  ["search_events", "carousel"],
+  ["search_schedule", "list"],
+]);
+
 export interface BuildCallToolResultOptions {
   toolName: string;
   result: unknown;
@@ -72,11 +77,13 @@ export function buildCallToolResult(
     );
     base.structuredContent = buildStructuredContent(toolName, result);
     if (templateUri) {
+      const widgetCategory =
+        TOOL_WIDGET_CATEGORY_MAP.get(toolName) ?? "carousel";
       const widgetMeta = {
         "openai/outputTemplate": templateUri,
         "openai/resultCanProduceWidget": true,
         "openai/widgetAccessible": true,
-        "openai/widgetCategory": "carousel",
+        "openai/widgetCategory": widgetCategory,
         "openai/widgetDomain": "connpass",
         "openai/widgetCSP": {
           connect_domains: ["https://connpass.com"],
