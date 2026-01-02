@@ -13,7 +13,9 @@ export function AgendaCard({ event, onShowDetail }: AgendaCardProps) {
     window.openai?.openExternal?.({ href: event.url });
   };
 
-  const fallbackLabel = event.group?.title || event.owner.displayName;
+  const ownerLabel =
+    event.owner?.displayName || event.owner?.nickname || "Connpass";
+  const fallbackLabel = event.group?.title || ownerLabel;
 
   return (
     <article className="flex gap-4 bg-white dark:bg-zinc-800/90 border border-black/5 dark:border-white/10 rounded-2xl shadow-md p-4 hover:shadow-lg transition-shadow">

@@ -13,11 +13,26 @@ export function App() {
   const { displayMode, requestDisplayMode } = useDisplayMode();
   const [widgetState, setWidgetState] = useWidgetState(DEFAULT_WIDGET_STATE);
 
+  // Debug logging
+  console.log("[schedule-app] toolOutput received:", {
+    hasToolOutput: !!toolOutput,
+    toolOutputKeys: toolOutput ? Object.keys(toolOutput) : [],
+    hasData: !!toolOutput?.data,
+    dataKeys: toolOutput?.data ? Object.keys(toolOutput.data as object) : [],
+  });
+
   // Normalize tool output
   const normalizedOutput = useMemo(
     () => normalizeToolOutput(toolOutput),
     [toolOutput]
   );
+
+  // Debug logging for normalized output
+  console.log("[schedule-app] normalizedOutput:", {
+    variant: normalizedOutput.variant,
+    sectionsCount: normalizedOutput.sections.length,
+    eventsCount: normalizedOutput.events.length,
+  });
 
   // Find selected event
   const selectedEvent = useMemo(() => {

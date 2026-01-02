@@ -58,7 +58,9 @@ export function DetailView({ event, onClose }: DetailViewProps) {
     window.openai?.openExternal?.({ href: event.url });
   };
 
-  const fallbackLabel = event.group?.title || event.owner.displayName;
+  const ownerLabel =
+    event.owner?.displayName || event.owner?.nickname || "Connpass";
+  const fallbackLabel = event.group?.title || ownerLabel;
 
   return (
     <div className="fixed inset-0 bg-white dark:bg-zinc-900 z-50 overflow-y-auto">
@@ -145,17 +147,19 @@ export function DetailView({ event, onClose }: DetailViewProps) {
 
         {/* Info grid */}
         <section className="mb-6 grid grid-cols-2 gap-4">
-          {event.owner && (
+          {(event.owner?.displayName || event.owner?.nickname) && (
             <div className="bg-zinc-50 dark:bg-zinc-800/50 rounded-xl p-3">
               <div className="text-xs text-zinc-500 dark:text-zinc-400 mb-1">
                 主催者
               </div>
               <div className="text-sm font-medium text-zinc-900 dark:text-white">
-                {event.owner.displayName}
+                {event.owner?.displayName || event.owner?.nickname}
               </div>
-              <div className="text-xs text-zinc-500 dark:text-zinc-400">
-                @{event.owner.nickname}
-              </div>
+              {event.owner?.nickname && (
+                <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                  @{event.owner.nickname}
+                </div>
+              )}
             </div>
           )}
 
