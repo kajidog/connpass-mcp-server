@@ -75,12 +75,6 @@ export class HttpClient {
   }
 
   private async applyRateLimit(): Promise<void> {
-    if (!this.rateLimitEnabled || this.rateLimitDelay <= 0) {
-      this.lastRequestTime = Date.now();
-      this.nextAvailableTime = this.lastRequestTime;
-      return;
-    }
-
     const now = Date.now();
     const scheduledStart = Math.max(now, this.nextAvailableTime);
     const waitTime = scheduledStart - now;
@@ -90,27 +84,38 @@ export class HttpClient {
     }
 
     this.lastRequestTime = Date.now();
-    this.nextAvailableTime = this.lastRequestTime + this.rateLimitDelay;
   }
 
   private scheduleRequest<T>(fn: () => Promise<T>): Promise<T> {
     if (!this.rateLimitEnabled || this.rateLimitDelay <= 0) {
-      this.lastRequestTime = Date.now();
-      this.nextAvailableTime = this.lastRequestTime;
       return fn();
     }
 
-    const waitPromise = this.rateLimiterTail.then(
-      () => this.applyRateLimit(),
-      () => this.applyRateLimit()
-    );
+    // Chain: wait for previous request -> apply rate limit -> execute request
+    const requestPromise = this.rateLimiterTail
+      .then(async () => {
+        // Wait until we can start the next request
+        await this.applyRateLimit();
 
-    this.rateLimiterTail = waitPromise.then(
+        // Execute the request
+        const result = await fn();
+
+        // Update next available time AFTER request completes
+        // This ensures the next request waits for both:
+        // 1. The previous request to complete
+        // 2. The configured delay (rateLimitDelay) after completion
+        this.nextAvailableTime = Date.now() + this.rateLimitDelay;
+
+        return result;
+      });
+
+    // Update tail to wait for this request to complete before starting next
+    this.rateLimiterTail = requestPromise.then(
       () => undefined,
       () => undefined
     );
 
-    return waitPromise.then(() => fn());
+    return requestPromise;
   }
 
   async get<T>(url: string, params?: Record<string, any>): Promise<AxiosResponse<T>> {
