@@ -1,6 +1,6 @@
 {
   "name": "@kajidog/connpass-mcp-server",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "MCP server for Connpass API integration",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -27,7 +27,11 @@
     "typescript": "^5.0.0",
     "vitest": "^1.6.0"
   },
-  "keywords": ["mcp", "mcp-server", "connpass"],
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "connpass"
+  ],
   "type": "commonjs",
   "license": "MIT",
   "repository": {
@@ -42,7 +46,10 @@
   "engines": {
     "node": ">=18"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
