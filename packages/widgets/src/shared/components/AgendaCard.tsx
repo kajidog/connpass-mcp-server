@@ -1,15 +1,15 @@
-import { Calendar, MapPin, ExternalLink } from "lucide-react";
+import { Calendar, MapPin } from "lucide-react";
 import type { ConnpassEvent } from "../types/events";
-import { formatDateRange } from "../../shared/utils/date-formatting";
-import { Badge } from "../../shared/components/Badge";
+import { formatDateRange } from "../utils/date-formatting";
+import { Badge } from "./Badge";
 
 interface AgendaCardProps {
   event: ConnpassEvent;
-  onShowDetail: (event: ConnpassEvent) => void;
 }
 
-export function AgendaCard({ event, onShowDetail }: AgendaCardProps) {
-  const handleOpenExternal = () => {
+export function AgendaCard({ event }: AgendaCardProps) {
+  const handleOpenExternal = (e: React.MouseEvent) => {
+    e.preventDefault();
     window.openai?.openExternal?.({ href: event.url });
   };
 
@@ -36,9 +36,13 @@ export function AgendaCard({ event, onShowDetail }: AgendaCardProps) {
 
       {/* Content */}
       <div className="flex-1 min-w-0 flex flex-col gap-2">
-        <h3 className="text-sm font-bold text-zinc-900 dark:text-white line-clamp-2 leading-snug">
+        <a
+          href={event.url}
+          onClick={handleOpenExternal}
+          className="text-sm font-bold text-blue-600 dark:text-blue-400 hover:underline line-clamp-2 leading-snug"
+        >
           {event.title}
-        </h3>
+        </a>
 
         <div className="flex items-center gap-3 flex-wrap">
           <Badge participants={event.participants} className="text-[10px] px-2 py-0.5" />
@@ -61,26 +65,7 @@ export function AgendaCard({ event, onShowDetail }: AgendaCardProps) {
             {event.catchPhrase}
           </p>
         )}
-
-        {/* Actions */}
-        <div className="flex gap-2 mt-1">
-          <button
-            type="button"
-            className="px-2.5 py-1 text-xs font-medium rounded-md bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
-            onClick={() => onShowDetail(event)}
-          >
-            詳細を見る
-          </button>
-          <button
-            type="button"
-            className="px-2.5 py-1 rounded-md bg-zinc-100 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-600 transition-colors"
-            onClick={handleOpenExternal}
-          >
-            <ExternalLink size={14} />
-          </button>
-        </div>
       </div>
     </article>
   );
 }
-

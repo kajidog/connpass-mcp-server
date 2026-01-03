@@ -1,7 +1,7 @@
 import { X, Calendar, MapPin, User, Hash, ExternalLink } from "lucide-react";
 import type { ConnpassEvent } from "../types/events";
-import { formatDateRange, participantsLabel } from "../utils/date-formatting";
-import { Badge } from "./Badge";
+import { formatDateRange, participantsLabel } from "../../shared/utils/date-formatting";
+import { Badge } from "../../shared/components/Badge";
 import { SummaryRenderer } from "./SummaryRenderer";
 import { PresentationList } from "./PresentationList";
 

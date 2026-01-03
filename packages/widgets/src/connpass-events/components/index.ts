@@ -1,4 +1,4 @@
-export { Badge } from "./Badge";
+export { Badge } from "../../shared/components/Badge";
 export { EventCard } from "./EventCard";
 export { Carousel } from "./Carousel";
 export { AgendaCard } from "./AgendaCard";

@@ -6,7 +6,8 @@ Connpass の API を MCP (Model Context Protocol) 経由で利用するための
 
 ## できること
 
-- **イベント検索**: 日付（YYYY-MM-DD 形式）やキーワードでイベントを検索
+- **イベント検索**: 日付（YYYY-MM-DD 形式）やキーワードでイベントを検索（カルーセル表示・詳細画面付き）
+- **スケジュール検索**: ユーザーの参加予定イベントを日付別に表示（軽量表示・Connpassへのリンク）
 - **ユーザー情報取得**: ニックネームやユーザー ID でユーザー情報を検索
 - **グループ情報取得**: キーワードや所在地でグループを検索
 - **参加イベント管理**: 特定ユーザーの参加予定・過去参加・登壇イベントを取得
@@ -23,13 +24,13 @@ Connpass の API を MCP (Model Context Protocol) 経由で利用するための
 </div>
 
 <div align="center">
-  <img src="docs/img/event-today.png" alt="今日のイベント表示" width="600">
-  <p><em>今日と今後のイベントをリスト形式で表示</em></p>
+  <img src="docs/img/schedule-search.png" alt="スケジュール検索表示" width="600">
+  <p><em>スケジュール検索：タイトルクリックでConnpassへ直接移動</em></p>
 </div>
 
 <div align="center">
   <img src="docs/img/event-details.png" alt="イベント詳細表示" width="600">
-  <p><em>詳細ボタンでセッション情報や主催者情報を確認</em></p>
+  <p><em>イベント検索：詳細ボタンでセッション情報や主催者情報を確認</em></p>
 </div>
 
 ## クイックセットアップ

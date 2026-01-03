@@ -7,7 +7,7 @@ import type {
   SearchToolOutput,
   AgendaToolOutput,
 } from "../types/events";
-import { formatJapaneseDate } from "../../shared/utils/date-formatting";
+import { formatJapaneseDate } from "./date-formatting";
 
 function sanitizeEventList(value: unknown): ConnpassEvent[] {
   if (!Array.isArray(value)) {

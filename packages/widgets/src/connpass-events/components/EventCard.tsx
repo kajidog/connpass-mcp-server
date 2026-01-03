@@ -1,7 +1,7 @@
 import { Calendar, MapPin, ExternalLink } from "lucide-react";
 import type { ConnpassEvent } from "../types/events";
-import { formatDateRange } from "../utils/date-formatting";
-import { Badge } from "./Badge";
+import { formatDateRange } from "../../shared/utils/date-formatting";
+import { Badge } from "../../shared/components/Badge";
 
 interface EventCardProps {
   event: ConnpassEvent;

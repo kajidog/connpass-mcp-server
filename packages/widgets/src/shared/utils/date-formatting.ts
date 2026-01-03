@@ -83,9 +83,9 @@ export function participantsLabel(
   const accepted = Number(participants.accepted ?? 0);
   const limit = Number(participants.limit ?? 0);
   const waiting = Number(participants.waiting ?? 0);
-  if (limit > 0) {
-    const waitText = waiting > 0 ? ` / 補欠 ${waiting}` : "";
-    return `${accepted} / ${limit}${waitText}`;
-  }
-  return waiting > 0 ? `${accepted} (+補欠 ${waiting})` : `${accepted}`;
+
+  const mainPart = limit > 0 ? `${accepted} / ${limit}` : `${accepted}`;
+  const waitPart = waiting > 0 ? ` (+${waiting})` : "";
+
+  return `${mainPart}${waitPart}`;
 }

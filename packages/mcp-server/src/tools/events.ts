@@ -165,12 +165,6 @@ const MyUpcomingEventsInputSchema = z.object({
     .max(100)
     .describe("Maximum number of attended events to examine (default 30)")
     .optional(),
-  includePresentations: z
-    .boolean()
-    .describe(
-      "Whether to fetch presentation details for each event. Extra API calls respect the 1 req/sec limit",
-    )
-    .optional(),
 });
 
 function buildEventSearchParams(
@@ -384,11 +378,6 @@ const eventToolsInternal: Tool[] = [
           maximum: 100,
           description: "Maximum attended events to check (default 30)",
         },
-        includePresentations: {
-          type: "boolean",
-          description:
-            "If true, also fetch presentation details for each event (extra API calls, rate-limited)",
-        },
       },
     },
     _meta: buildScheduleWidgetMeta(),
@@ -434,8 +423,6 @@ const eventHandlers = {
     }
 
     const maxEventsToFetch = parsed.maxEvents ?? 30;
-    const includePresentations =
-      parsed.includePresentations ?? getDefaultIncludePresentations();
 
     // Parse date range
     const today = startOfDay(new Date());
@@ -487,16 +474,11 @@ const eventHandlers = {
     // Create sections for each date, sorted chronologically
     const sortedDates = Array.from(eventsByDate.keys()).sort();
     const sections = await Promise.all(
-      sortedDates.map(async (date) => {
+      sortedDates.map((date) => {
         const events = eventsByDate.get(date)!;
-        const enrichedEvents = await maybeAttachPresentations(
-          events,
-          includePresentations,
-          connpassClient,
-        );
         return {
           date,
-          events: formatEventList(enrichedEvents, SCHEDULE_FORMAT_OPTIONS),
+          events: formatEventList(events, SCHEDULE_FORMAT_OPTIONS),
         };
       }),
     );
@@ -509,7 +491,6 @@ const eventHandlers = {
         toDate: formatDateLabel(rangeEnd),
         inspected: searchResponse.eventsReturned,
         limit: maxEventsToFetch,
-        includePresentations: Boolean(includePresentations),
       },
     };
   },

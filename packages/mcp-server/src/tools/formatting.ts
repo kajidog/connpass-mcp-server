@@ -140,9 +140,16 @@ export function stripHtml(input: string): string {
   const withoutScripts = input.replace(/<script[\s\S]*?<\/script>/gi, "");
   const withoutStyles = withoutScripts.replace(/<style[\s\S]*?<\/style>/gi, "");
 
-  const withLineBreaks = withoutStyles
+  // Collapse whitespace between consecutive table cells within a row
+  // This handles HTML where there are newlines between </td> and <td>
+  const normalizedTableCells = withoutStyles
+    .replace(/<\/(td|th)>\s*<(td|th)/gi, "</$1>\t<$2") // Join adjacent cells with tab
+    .replace(/<\/(tr)>\s*<tr/gi, "</$1>\n<tr"); // Ensure row breaks stay as newlines
+
+  const withLineBreaks = normalizedTableCells
     .replace(/<br\s*\/?\s*>/gi, "\n")
     .replace(/<\/(p|div|section|article|header|footer|li)>/gi, "\n")
+    .replace(/<\/(td|th)>/gi, "\t") // Tab separator between table cells
     .replace(/<li[^>]*>/gi, "- ")
     .replace(/<\/(h[1-6]|tr)>/gi, "\n");
 

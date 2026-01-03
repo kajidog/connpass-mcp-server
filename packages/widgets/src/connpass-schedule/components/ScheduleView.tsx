@@ -1,11 +1,10 @@
-import type { AgendaSection, ConnpassEvent, EventsMetadata } from "../../connpass-events/types/events";
-import { AgendaCard } from "../../connpass-events/components/AgendaCard";
+import type { AgendaSection, EventsMetadata } from "../../shared/types/events";
+import { AgendaCard } from "../../shared/components/AgendaCard";
 
 interface ScheduleViewProps {
   sections: AgendaSection[];
   metadata: EventsMetadata | null;
   userId: number | null;
-  onShowDetail: (event: ConnpassEvent) => void;
   isLoading?: boolean;
 }
 
@@ -30,9 +29,6 @@ function MetadataChips({
   }
   if (metadata?.limit != null) {
     chips.push({ label: "取得件数", value: metadata.limit });
-  }
-  if (metadata?.includePresentations) {
-    chips.push({ label: "発表資料", value: "含む" });
   }
 
   if (chips.length === 0) return null;
@@ -64,7 +60,6 @@ export function ScheduleView({
   sections,
   metadata,
   userId,
-  onShowDetail,
   isLoading,
 }: ScheduleViewProps) {
   // Show loading state
@@ -116,7 +111,6 @@ export function ScheduleView({
                   <AgendaCard
                     key={event.id}
                     event={event}
-                    onShowDetail={onShowDetail}
                   />
                 ))}
               </div>

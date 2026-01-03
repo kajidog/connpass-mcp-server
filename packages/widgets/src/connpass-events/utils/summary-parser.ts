@@ -66,8 +66,17 @@ const SUMMARY_SECTION_HEADINGS = new Set([
   "連絡先",
 ]);
 
-const SUMMARY_SKIP_HEADINGS = new Set(["日時", "時間", "内容", "スケジュール"]);
+const SUMMARY_SKIP_HEADINGS = new Set(["日時", "時間", "内容", "スケジュール", "備考"]);
 const SCHEDULE_HEADER_CANDIDATES = new Set(["時間", "内容"]);
+
+/**
+ * Detect table header rows like "時間 内容 備考" or "時間 内容"
+ */
+function isTableHeaderLine(value: string): boolean {
+  const normalized = value.trim();
+  // Common table header patterns
+  return /^時間\s+内容/.test(normalized);
+}
 
 function normalizeHeadingText(text: string | undefined | null): string {
   return String(text ?? "")
@@ -84,6 +93,31 @@ function normalizeScheduleLabel(value: string | undefined | null): string {
     .replace(/\s*[-〜–—]\s*/gu, " - ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+/**
+ * Parse a schedule line that may contain time and description in one line.
+ * Examples:
+ *   "13:00 開場" => { time: "13:00", description: "開場" }
+ *   "13:10 - 13:15 オープニング" => { time: "13:10 - 13:15", description: "オープニング" }
+ *   "13:00" => { time: "13:00", description: undefined }
+ */
+function parseScheduleLine(line: string): { time: string; description?: string } {
+  // Match time patterns: "13:00" or "13:00 - 14:00" or "13:00 〜 14:00"
+  const timePattern = /^(\d{1,2}:\d{2}(?:\s*[-〜–—]\s*\d{1,2}:\d{2})?)\s*/;
+  const match = timePattern.exec(line);
+  
+  if (!match) {
+    return { time: normalizeScheduleLabel(line) };
+  }
+  
+  const time = normalizeScheduleLabel(match[1]);
+  const rest = line.slice(match[0].length).trim();
+  
+  return {
+    time,
+    description: rest || undefined,
+  };
 }
 
 function isBulletLine(value: string): boolean {
@@ -130,6 +164,12 @@ export function buildSummaryBlocks(
       continue;
     }
 
+    // Skip table header rows like "時間 内容 備考"
+    if (isTableHeaderLine(current)) {
+      index += 1;
+      continue;
+    }
+
     if (SUMMARY_SECTION_HEADINGS.has(headingText)) {
       if (!(blocks.length === 0 && headingText === "概要")) {
         blocks.push({ type: "heading", text: headingText });
@@ -142,41 +182,47 @@ export function buildSummaryBlocks(
     if (isScheduleLine(current)) {
       const entries: ScheduleEntry[] = [];
       while (index < segments.length && isScheduleLine(segments[index])) {
-        const timeRaw = segments[index];
+        const lineRaw = segments[index];
         index += 1;
+        
+        // Parse time and description from the same line (for table-converted format)
+        const parsed = parseScheduleLine(lineRaw);
         const entry: ScheduleEntry = {
-          time: normalizeScheduleLabel(timeRaw),
-          description: undefined,
+          time: parsed.time,
+          description: parsed.description,
           details: [],
         };
 
-        while (index < segments.length) {
-          const peek = segments[index];
-          const peekHeading = SUMMARY_SECTION_HEADINGS.has(
-            normalizeHeadingText(peek)
-          );
-          const peekSkip = SUMMARY_SKIP_HEADINGS.has(
-            normalizeHeadingText(peek)
-          );
-          if (peekHeading || peekSkip || isScheduleLine(peek)) {
+        // Only look for additional content if description wasn't in the same line
+        if (!entry.description) {
+          while (index < segments.length) {
+            const peek = segments[index];
+            const peekHeading = SUMMARY_SECTION_HEADINGS.has(
+              normalizeHeadingText(peek)
+            );
+            const peekSkip = SUMMARY_SKIP_HEADINGS.has(
+              normalizeHeadingText(peek)
+            );
+            if (peekHeading || peekSkip || isScheduleLine(peek)) {
+              break;
+            }
+            if (isBulletLine(peek)) {
+              entry.details.push(stripBullet(peek));
+              index += 1;
+              continue;
+            }
+            if (isNoteLine(peek)) {
+              entry.details.push(peek);
+              index += 1;
+              continue;
+            }
+            if (!entry.description) {
+              entry.description = peek;
+              index += 1;
+              continue;
+            }
             break;
           }
-          if (isBulletLine(peek)) {
-            entry.details.push(stripBullet(peek));
-            index += 1;
-            continue;
-          }
-          if (isNoteLine(peek)) {
-            entry.details.push(peek);
-            index += 1;
-            continue;
-          }
-          if (!entry.description) {
-            entry.description = peek;
-            index += 1;
-            continue;
-          }
-          break;
         }
 
         entries.push(entry);
