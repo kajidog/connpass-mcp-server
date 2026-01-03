@@ -24,7 +24,6 @@ import {
   EVENT_SORT_MAP,
   applyPagination,
   normalizeStringArray,
-  parseDateInput,
   parseHyphenatedDate,
   toYmdArray,
 } from "./shared.js";
@@ -215,6 +214,10 @@ const DEFAULT_EVENT_FORMAT_OPTIONS: FormatEventOptions = {
   catchPhraseLimit: 150,
 };
 
+/**
+ * Format options for carousel widgets (e.g. search_events).
+ * Carousel widgets can handle larger payloads.
+ */
 function resolveFormatOptions(): FormatEventOptions {
   if (isAppsSdkOutputEnabled()) {
     return {
@@ -224,6 +227,16 @@ function resolveFormatOptions(): FormatEventOptions {
   }
   return DEFAULT_EVENT_FORMAT_OPTIONS;
 }
+
+/**
+ * Format options for schedule/list widgets.
+ * Completely exclude description to minimize payload size and prevent
+ * ChatGPT from freezing. Users can view full details on Connpass directly.
+ */
+const SCHEDULE_FORMAT_OPTIONS: FormatEventOptions = {
+  descriptionLimit: 0, // Exclude description entirely
+  catchPhraseLimit: 100, // Brief summary only
+};
 
 async function maybeAttachPresentations(
   events: Event[],
@@ -483,7 +496,7 @@ const eventHandlers = {
         );
         return {
           date,
-          events: formatEventList(enrichedEvents, resolveFormatOptions()),
+          events: formatEventList(enrichedEvents, SCHEDULE_FORMAT_OPTIONS),
         };
       }),
     );
