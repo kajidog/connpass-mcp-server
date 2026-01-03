@@ -28,13 +28,13 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kajidog/connpass-in-chatgpt.git",
+    "url": "https://github.com/kajidog/connpass-mcp-server.git",
     "directory": "packages/api-client"
   },
   "bugs": {
-    "url": "https://github.com/kajidog/connpass-in-chatgpt/issues"
+    "url": "https://github.com/kajidog/connpass-mcp-server/issues"
   },
-  "homepage": "https://github.com/kajidog/connpass-in-chatgpt#readme",
+  "homepage": "https://github.com/kajidog/connpass-mcp-server#readme",
   "engines": {
     "node": ">=18"
   },
