@@ -269,10 +269,15 @@ export function formatEvent(
     formatted.catchPhrase = processedCatchPhrase;
   }
 
+  // descriptionLimit: undefined = no limit (full text)
+  // descriptionLimit: 0 = exclude description entirely
+  // descriptionLimit: N > 0 = truncate to N characters
   const processedDescription =
-    typeof descriptionLimit === "number" && descriptionLimit > 0
-      ? truncateText(description, descriptionLimit)
-      : description;
+    typeof descriptionLimit === "number"
+      ? descriptionLimit > 0
+        ? truncateText(description, descriptionLimit)
+        : "" // limit === 0 means exclude
+      : description; // undefined means no limit
   if (processedDescription) {
     formatted.summary = processedDescription;
   }
