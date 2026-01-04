@@ -38,14 +38,11 @@ Connpass の API を MCP (Model Context Protocol) 経由で利用するための
 ### npx で即座に起動
 
 ```bash
-# HTTP トランスポートで起動（デフォルト）
+# 起動（デフォルト ポート 3000）
 npx @kajidog/connpass-mcp-server
 
 # ポート指定
 npx @kajidog/connpass-mcp-server --port 8080
-
-# SSE トランスポートで起動
-npx @kajidog/connpass-mcp-server --transport sse
 
 # ヘルプを表示
 npx @kajidog/connpass-mcp-server --help
@@ -89,14 +86,12 @@ docker-compose logs -f
 
 サーバーは `http://localhost:3000` で起動します。
 
-### トランスポート方式と接続URL
+### 接続URL
 
-MCP サーバーは以下の2つのトランスポート方式に対応しています。
-
-#### HTTP (Streamable HTTP) - デフォルト
+MCP サーバーは Streamable HTTP トランスポートを使用します。
 
 ```bash
-# デフォルトで HTTP トランスポートで起動
+# 起動
 pnpm --filter @kajidog/connpass-mcp-server start
 
 # ポート指定
@@ -106,21 +101,7 @@ pnpm --filter @kajidog/connpass-mcp-server start -- --port 8080
 - **接続URL**: `http://localhost:3000` (デフォルト)
 - MCPクライアントから `POST http://localhost:3000` でリクエストを送信します
 
-#### SSE (Server-Sent Events)
-
-```bash
-# SSE トランスポートで起動
-pnpm --filter @kajidog/connpass-mcp-server start -- --transport sse
-
-# ポート指定
-pnpm --filter @kajidog/connpass-mcp-server start -- --transport sse --port 8080
-```
-
-- **接続URL**: `http://localhost:3000/mcp` (デフォルト)
-- SSE ストリーム: `GET http://localhost:3000/mcp`
-- メッセージ送信: `POST http://localhost:3000/mcp/messages?sessionId=...`
-
-詳細は [packages/mcp-server/README.md](packages/mcp-server/README.md) のトランスポート方式セクションを参照してください。
+詳細は [packages/mcp-server/README.md](packages/mcp-server/README.md) を参照してください。
 
 ### 通常インストール
 
@@ -155,7 +136,8 @@ connpass-in-chatgpt/
 │   │   ├── src/             # MCP サーバーのソースコード
 │   │   │   ├── tools/       # MCP ツール定義（events, users, groups など）
 │   │   │   ├── widgets/     # ウィジェット読み込みロジック
-│   │   │   └── transports/  # SSE トランスポート実装
+│   │   │   ├── auth/        # OAuth 2.0 認証（JWT/JWKS）
+│   │   │   └── transports/  # HTTP トランスポート実装
 │   │   ├── dist/            # ビルド成果物
 │   │   └── README.md        # MCP サーバーの詳細ドキュメント
 │   │

@@ -31,7 +31,6 @@ const RAW_INCLUDE_PRESENTATIONS_DEFAULT =
 const RAW_ENABLE_APPS_SDK_OUTPUT = process.env.CONNPASS_ENABLE_APPS_SDK_OUTPUT;
 const RAW_RATE_LIMIT_ENABLED = process.env.CONNPASS_RATE_LIMIT_ENABLED;
 const RAW_RATE_LIMIT_DELAY_MS = process.env.CONNPASS_RATE_LIMIT_DELAY_MS;
-const RAW_MCP_BASE_PATH = process.env.MCP_BASE_PATH;
 
 const parsedDefaultUserId = (() => {
   if (!RAW_DEFAULT_USER_ID) {
@@ -98,18 +97,4 @@ export function getRateLimitEnabled(): boolean | undefined {
 
 export function getRateLimitDelayMs(): number | undefined {
   return parsedRateLimitDelayMs;
-}
-
-export function getMcpBasePath(): string {
-  const raw = RAW_MCP_BASE_PATH?.trim();
-  if (!raw) {
-    return "/mcp";
-  }
-
-  if (raw === "/") {
-    return raw;
-  }
-
-  const ensureLeadingSlash = raw.startsWith("/") ? raw : `/${raw}`;
-  return ensureLeadingSlash.replace(/\/+$/, "");
 }
