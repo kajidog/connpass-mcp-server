@@ -40,12 +40,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build web-auth
-        working-directory: apps/web-auth
         env:
           VITE_AUTH_MODE: supabase
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-        run: pnpm build
+        run: pnpm --filter @kajidog/mcp-web-auth build
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
