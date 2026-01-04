@@ -10,7 +10,6 @@
   "scripts": {
     "build": "tsc -b",
     "dev": "tsc -b --watch",
-    "dev:auth": "node scripts/auth-server.js",
     "start": "node dist/index.js",
     "lint": "biome lint src",
     "typecheck": "tsc --noEmit",
@@ -31,11 +30,7 @@
     "typescript": "^5.0.0",
     "vitest": "^1.6.0"
   },
-  "keywords": [
-    "mcp",
-    "mcp-server",
-    "connpass"
-  ],
+  "keywords": ["mcp", "mcp-server", "connpass"],
   "type": "commonjs",
   "license": "MIT",
   "repository": {
@@ -50,10 +45,7 @@
   "engines": {
     "node": ">=18"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "publishConfig": {
     "access": "public"
   },

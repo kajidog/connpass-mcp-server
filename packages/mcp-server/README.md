@@ -49,25 +49,22 @@ connpass-mcp-server
    pnpm --filter @kajidog/connpass-mcp-server build
    ```
 
-3. (オプション) 開発用の簡易認証サーバーを起動します。
+3. サーバーを起動します。
 
    ```bash
-   # ポート 3001 で JWT 発行可能な認証サーバーが起動します
-   pnpm --filter @kajidog/connpass-mcp-server dev:auth
-   ```
-
-4. 認証サーバーを使用する場合、環境変数を設定してサーバーを起動します。
-
-   ```bash
-   # OAuth 設定例
-   export MCP_OAUTH_ENABLED=true
-   export MCP_AUTH_SERVER_URL=http://localhost:3001
-   export MCP_JWKS_URI=http://localhost:3001/.well-known/jwks.json
-
    CONNPASS_API_KEY=あなたのAPIキー pnpm --filter @kajidog/connpass-mcp-server start
    ```
 
    > ローカル開発時などで API キーが未設定の場合、`dummy-key` が自動で使用されます。
+
+4. (オプション) OAuth 認証を有効にする場合:
+
+   ```bash
+   export MCP_OAUTH_ENABLED=true
+   export MCP_JWKS_URI=https://your-auth-server/.well-known/jwks.json
+   ```
+
+   > ローカル開発用の認証サーバーは `apps/web-auth` を参照してください。
 
 必要に応じて、デフォルトで参照するユーザー ID を `CONNPASS_DEFAULT_USER_ID` に設定できます。`search_schedule` ツールで `userId` を省略した場合に利用されます。
 
