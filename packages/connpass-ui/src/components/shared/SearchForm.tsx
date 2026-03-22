@@ -143,12 +143,12 @@ export function SearchForm({
 
       {/* 期間プリセット（詳細条件の外） */}
       <div className="flex flex-col gap-1">
-        <label
+        <span
           className="text-xs font-medium"
           style={{ color: "var(--ui-text)" }}
         >
           期間
-        </label>
+        </span>
         <div className="flex flex-wrap gap-1.5">
           {DATE_PRESET_OPTIONS.map(([preset, label]) => {
             const selected = formValues.datePreset === preset;

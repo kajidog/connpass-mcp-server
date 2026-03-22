@@ -5,8 +5,8 @@ import {
 } from "../../domain/entities";
 import { ConnpassValidationError } from "../../domain/errors";
 
-export class Validators {
-  static validateEventSearchParams(params: EventSearchParams): void {
+export const Validators = {
+  validateEventSearchParams(params: EventSearchParams): void {
     if (
       params.count !== undefined &&
       (params.count < 1 || params.count > 100)
@@ -24,13 +24,13 @@ export class Validators {
       );
     }
 
-    if (params.eventId && params.eventId.some((id) => id <= 0)) {
+    if (params.eventId?.some((id) => id <= 0)) {
       throw new ConnpassValidationError(
         "All event IDs must be positive numbers",
       );
     }
 
-    if (params.groupId && params.groupId.some((id) => id <= 0)) {
+    if (params.groupId?.some((id) => id <= 0)) {
       throw new ConnpassValidationError(
         "All group IDs must be positive numbers",
       );
@@ -53,9 +53,9 @@ export class Validators {
         }
       }
     }
-  }
+  },
 
-  static validateGroupSearchParams(params: GroupSearchParams): void {
+  validateGroupSearchParams(params: GroupSearchParams): void {
     if (
       params.count !== undefined &&
       (params.count < 1 || params.count > 100)
@@ -73,14 +73,14 @@ export class Validators {
       );
     }
 
-    if (params.groupId && params.groupId.some((id) => id <= 0)) {
+    if (params.groupId?.some((id) => id <= 0)) {
       throw new ConnpassValidationError(
         "All group IDs must be positive numbers",
       );
     }
-  }
+  },
 
-  static validateUserSearchParams(params: UserSearchParams): void {
+  validateUserSearchParams(params: UserSearchParams): void {
     if (
       params.count !== undefined &&
       (params.count < 1 || params.count > 100)
@@ -98,26 +98,26 @@ export class Validators {
       );
     }
 
-    if (params.userId && params.userId.some((id) => id <= 0)) {
+    if (params.userId?.some((id) => id <= 0)) {
       throw new ConnpassValidationError(
         "All user IDs must be positive numbers",
       );
     }
-  }
+  },
 
-  static validatePositiveInteger(value: number, fieldName: string): void {
+  validatePositiveInteger(value: number, fieldName: string): void {
     if (!Number.isInteger(value) || value <= 0) {
       throw new ConnpassValidationError(
         `${fieldName} must be a positive integer`,
       );
     }
-  }
+  },
 
-  static validateNickname(value: string, fieldName: string = "nickname"): void {
+  validateNickname(value: string, fieldName: string = "nickname"): void {
     if (typeof value !== "string" || value.trim().length === 0) {
       throw new ConnpassValidationError(
         `${fieldName} must be a non-empty string`,
       );
     }
-  }
-}
+  },
+};

@@ -9,9 +9,10 @@ interface EventCardProps {
 
 export function EventCard({ event, onClick, compact }: EventCardProps) {
   return (
-    <div
+    <button
+      type="button"
       onClick={() => onClick(event)}
-      className="flex gap-3 p-3 rounded-lg cursor-pointer transition-colors"
+      className="flex w-full gap-3 p-3 rounded-lg cursor-pointer transition-colors text-left"
       style={{
         background: "var(--ui-surface)",
         border: "1px solid var(--ui-border)",
@@ -75,6 +76,6 @@ export function EventCard({ event, onClick, compact }: EventCardProps) {
           </p>
         )}
       </div>
-    </div>
+    </button>
   );
 }

@@ -27,6 +27,7 @@ export function EventDetail({
     >
       <div className="flex items-center gap-2">
         <button
+          type="button"
           onClick={onBack}
           className="px-2 py-1 rounded-md text-xs"
           style={{
@@ -146,6 +147,7 @@ export function EventDetail({
           </div>
 
           <button
+            type="button"
             onClick={() => onOpenLink(event.url)}
             className="w-full py-2.5 rounded-lg text-sm font-medium text-white"
             style={{ background: "var(--ui-accent)" }}
@@ -233,7 +235,8 @@ export function EventDetail({
               )}
               {p.links?.url && (
                 <button
-                  onClick={() => onOpenLink(p.links!.url!)}
+                  type="button"
+                  onClick={() => onOpenLink(p.links.url)}
                   className="mt-2 text-xs underline"
                   style={{ color: "var(--ui-accent)" }}
                 >
@@ -247,6 +250,7 @@ export function EventDetail({
 
       {!loading && (
         <button
+          type="button"
           onClick={() => onOpenLink(event.url)}
           className="w-full py-2.5 rounded-lg text-sm font-medium text-white"
           style={{ background: "var(--ui-accent)" }}
