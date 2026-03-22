@@ -10,9 +10,11 @@ import { PresentationCache } from "../cache/PresentationCache";
 import { HttpClient } from "../http/HttpClient";
 import {
   ApiEventsResponse,
+  ApiPresentationsResponse,
   QueryParams,
   getResponseMeta,
   mapApiEvent,
+  mapApiPresentation,
 } from "./apiTypes";
 
 export class EventRepository implements IEventRepository {
@@ -38,10 +40,10 @@ export class EventRepository implements IEventRepository {
       return cached;
     }
 
-    const response = await this.httpClient.get<PresentationsResponse>(
+    const response = await this.httpClient.get<ApiPresentationsResponse>(
       `/events/${eventId}/presentations/`,
     );
-    const data = response.data;
+    const data = this.mapPresentationsResponse(response.data);
     await this.presentationCache?.set(eventId, data);
     return data;
   }
@@ -100,6 +102,24 @@ export class EventRepository implements IEventRepository {
       eventsAvailable: meta.eventsAvailable,
       eventsStart: meta.eventsStart,
       events,
+    };
+  }
+
+  private mapPresentationsResponse(
+    data: ApiPresentationsResponse,
+  ): PresentationsResponse {
+    const presentationsArray = data.presentations ?? [];
+
+    return {
+      presentationsReturned:
+        data.results?.returned ??
+        data.results_returned ??
+        data.resultsReturned ??
+        data.returned ??
+        presentationsArray.length,
+      presentations: presentationsArray.map((presentation, index) =>
+        mapApiPresentation(presentation, index),
+      ),
     };
   }
 }

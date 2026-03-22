@@ -48,13 +48,16 @@ export function registerUIEventDetailTool(deps: ToolDeps): void {
       const presentations = presentationsResponse
         ? formatPresentationsResponse(presentationsResponse)
         : undefined;
+      const detailEvent = presentations?.presentations?.length
+        ? { ...formatted, presentations: presentations.presentations }
+        : formatted;
 
       return {
-        content: [{ type: "text" as const, text: JSON.stringify(formatted) }],
+        content: [{ type: "text" as const, text: JSON.stringify(detailEvent) }],
         structuredContent: {
           kind: "event-detail",
           data: {
-            event: formatted,
+            event: detailEvent,
             presentations,
           },
         },

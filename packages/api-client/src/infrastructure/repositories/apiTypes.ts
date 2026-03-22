@@ -1,4 +1,4 @@
-import type { Event, Group, User } from "../../domain/entities";
+import type { Event, Group, Presentation, User } from "../../domain/entities";
 
 type QueryParamPrimitive = string | number | boolean;
 
@@ -114,6 +114,41 @@ export interface ApiUsersResponse extends ApiListResponseBase {
   user?: ApiUser[];
 }
 
+export interface ApiPresentationPerson {
+  id?: number;
+  nickname?: string | null;
+}
+
+export interface ApiPresentation {
+  id?: number;
+  presentation_id?: number;
+  title?: string | null;
+  name?: string | null;
+  speaker_name?: string | null;
+  speakerName?: string | null;
+  presenter?: ApiPresentationPerson | null;
+  user?: ApiPresentationPerson | null;
+  description?: string | null;
+  abstract?: string | null;
+  url?: string | null;
+  slideshare_url?: string | null;
+  slideshareUrl?: string | null;
+  youtube_url?: string | null;
+  youtubeUrl?: string | null;
+  twitter_url?: string | null;
+  twitterUrl?: string | null;
+  order?: number | null;
+  presentation_order?: number | null;
+  updated_at?: string | null;
+  updatedAt?: string | null;
+  created_at?: string | null;
+  createdAt?: string | null;
+}
+
+export interface ApiPresentationsResponse extends ApiListResponseBase {
+  presentations?: ApiPresentation[];
+}
+
 function parseOptionalNumber(
   value: number | string | null | undefined,
 ): number | undefined {
@@ -180,6 +215,40 @@ export function mapApiUser(user: ApiUser): User {
     githubUsername: user.github_username ?? user.githubUsername ?? undefined,
     url: user.url ?? undefined,
     updatedAt: user.updated_at ?? user.updatedAt ?? user.created_at ?? "",
+  };
+}
+
+export function mapApiPresentation(
+  presentation: ApiPresentation,
+  index = 0,
+): Presentation {
+  const speakerName =
+    presentation.speaker_name ??
+    presentation.speakerName ??
+    presentation.presenter?.nickname ??
+    presentation.user?.nickname ??
+    "";
+
+  return {
+    id: presentation.id ?? presentation.presentation_id ?? index + 1,
+    title: presentation.title ?? presentation.name ?? "",
+    speakerName,
+    description: presentation.description ?? presentation.abstract ?? "",
+    url: presentation.url ?? undefined,
+    slideshareUrl:
+      presentation.slideshare_url ?? presentation.slideshareUrl ?? undefined,
+    youtubeUrl: presentation.youtube_url ?? presentation.youtubeUrl ?? undefined,
+    twitterUrl: presentation.twitter_url ?? presentation.twitterUrl ?? undefined,
+    order:
+      presentation.order ??
+      presentation.presentation_order ??
+      index + 1,
+    updatedAt:
+      presentation.updated_at ??
+      presentation.updatedAt ??
+      presentation.created_at ??
+      presentation.createdAt ??
+      "",
   };
 }
 

@@ -135,7 +135,18 @@ export function extractEventDetailData(result: unknown): FormattedEvent | null {
   if (data.data && typeof data.data === "object") {
     const inner = data.data as Record<string, unknown>;
     if (inner.event && typeof inner.event === "object") {
-      return inner.event as FormattedEvent;
+      const event = inner.event as FormattedEvent;
+      const presentationsRecord =
+        inner.presentations && typeof inner.presentations === "object"
+          ? (inner.presentations as Record<string, unknown>)
+          : null;
+      const presentations = Array.isArray(presentationsRecord?.presentations)
+        ? presentationsRecord.presentations
+        : undefined;
+
+      return presentations?.length
+        ? { ...event, presentations: presentations as FormattedEvent["presentations"] }
+        : event;
     }
   }
 

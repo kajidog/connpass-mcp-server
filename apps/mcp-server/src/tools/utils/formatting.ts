@@ -219,11 +219,13 @@ export function formatPresentation(
   descriptionLimit?: number,
 ): FormattedPresentation {
   const summary = sanitizeRichText(presentation.description);
+  const title = String(presentation.title ?? "").trim();
+  const speaker = String(presentation.speakerName ?? "").trim();
 
   const formatted: FormattedPresentation = {
     id: presentation.id,
-    title: presentation.title.trim(),
-    speaker: presentation.speakerName,
+    title: title || "Untitled presentation",
+    speaker: speaker || "Speaker unknown",
     order: presentation.order,
     updatedAt: presentation.updatedAt,
   };
