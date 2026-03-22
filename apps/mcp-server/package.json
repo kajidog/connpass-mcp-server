@@ -1,6 +1,6 @@
 {
   "name": "@kajidog/connpass-mcp-server",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "description": "MCP server for Connpass API integration with MCP Apps Extension support",
   "main": "./dist/index.js",
@@ -28,7 +28,12 @@
     "tsx": "^4.19.0",
     "typescript": "^5.0.0"
   },
-  "keywords": ["mcp", "mcp-server", "connpass", "mcp-apps"],
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "connpass",
+    "mcp-apps"
+  ],
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -42,7 +47,10 @@
   "engines": {
     "node": ">=18"
   },
-  "files": ["dist", "README.md"],
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "publishConfig": {
     "access": "public"
   },
