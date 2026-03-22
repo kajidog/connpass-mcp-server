@@ -3,7 +3,7 @@
 
 import { isNodejs, launchServer } from "@kajidog/mcp-core";
 import { getConfig, getHelpText } from "./config.js";
-import { createServer, server } from "./server.js";
+import { createServer, getServer } from "./server.js";
 
 function isCLI(): boolean {
   if (!isNodejs() || !process.argv) return false;
@@ -58,7 +58,7 @@ async function startMCPServer(): Promise<void> {
   }
 
   await launchServer({
-    server,
+    server: getServer(),
     config,
     serverName: "Connpass MCP Apps",
     serverFactory: createServer,

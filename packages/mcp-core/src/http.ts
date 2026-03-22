@@ -74,6 +74,24 @@ function unauthorizedError(message: string): ErrorResponse {
   };
 }
 
+function extractHostnameFromHostHeader(host: string): string {
+  const trimmedHost = host.trim();
+
+  if (trimmedHost.startsWith("[")) {
+    const bracketEnd = trimmedHost.indexOf("]");
+    if (bracketEnd !== -1) {
+      return trimmedHost.slice(0, bracketEnd + 1);
+    }
+  }
+
+  const colonIndex = trimmedHost.indexOf(":");
+  if (colonIndex === -1) {
+    return trimmedHost;
+  }
+
+  return trimmedHost.slice(0, colonIndex);
+}
+
 /**
  * Origin検証ミドルウェア
  */
@@ -131,7 +149,7 @@ function validateHost(config: BaseServerConfig) {
       return next();
     }
 
-    const hostname = host.includes(":") ? host.split(":")[0] : host;
+    const hostname = extractHostnameFromHostHeader(host);
 
     if (!config.allowedHosts.includes(hostname)) {
       console.log(

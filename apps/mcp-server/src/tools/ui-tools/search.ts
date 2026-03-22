@@ -19,8 +19,6 @@ const UI_LIST_FORMAT_OPTIONS = {
   catchPhraseLimit: 100,
 } as const;
 
-const UI_LOCAL_FETCH_LIMIT = 100;
-
 const UIEventSearchInputSchema = z.object({
   query: z.string().min(1).optional(),
   anyQuery: z.string().min(1).optional(),
@@ -167,13 +165,11 @@ export function registerUISearchTool(deps: ToolDeps): void {
         prefecture:
           resolved.prefectures ?? normalizeStringArray(params.prefectures),
         order: EVENT_SORT_MAP["start-date-asc"],
-        count: useLocalFiltering ? UI_LOCAL_FETCH_LIMIT : pagination.count,
-        start: useLocalFiltering ? 1 : pagination.start,
         ...pagination,
       };
 
-      const response = await connpassClient.searchEvents(searchParams);
       if (!useLocalFiltering) {
+        const response = await connpassClient.searchEvents(searchParams);
         const formatted = formatEventsResponse(
           response,
           UI_LIST_FORMAT_OPTIONS,
@@ -187,6 +183,7 @@ export function registerUISearchTool(deps: ToolDeps): void {
         };
       }
 
+      const response = await connpassClient.getAllEvents(searchParams);
       const filtered = sortEvents(
         applyLocalFilters(response.events, params),
         params.sort,

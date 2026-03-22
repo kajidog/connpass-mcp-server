@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
 import { connectStdio } from "@kajidog/mcp-core";
-import { server } from "./server.js";
+import { getServer } from "./server.js";
 
-connectStdio(server).catch(() => {
+connectStdio(getServer()).catch(() => {
   process.exit(1);
 });
