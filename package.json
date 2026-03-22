@@ -8,6 +8,7 @@
     "changeset": "changeset",
     "dev": "pnpm -r dev",
     "lint": "biome ci .",
+    "lint:fix": "biome check --fix .",
     "release": "changeset publish",
     "typecheck": "pnpm -r typecheck",
     "version-packages": "changeset version",

@@ -145,7 +145,10 @@ export function extractEventDetailData(result: unknown): FormattedEvent | null {
         : undefined;
 
       return presentations?.length
-        ? { ...event, presentations: presentations as FormattedEvent["presentations"] }
+        ? {
+            ...event,
+            presentations: presentations as FormattedEvent["presentations"],
+          }
         : event;
     }
   }

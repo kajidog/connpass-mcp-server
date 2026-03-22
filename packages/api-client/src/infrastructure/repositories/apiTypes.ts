@@ -237,12 +237,11 @@ export function mapApiPresentation(
     url: presentation.url ?? undefined,
     slideshareUrl:
       presentation.slideshare_url ?? presentation.slideshareUrl ?? undefined,
-    youtubeUrl: presentation.youtube_url ?? presentation.youtubeUrl ?? undefined,
-    twitterUrl: presentation.twitter_url ?? presentation.twitterUrl ?? undefined,
-    order:
-      presentation.order ??
-      presentation.presentation_order ??
-      index + 1,
+    youtubeUrl:
+      presentation.youtube_url ?? presentation.youtubeUrl ?? undefined,
+    twitterUrl:
+      presentation.twitter_url ?? presentation.twitterUrl ?? undefined,
+    order: presentation.order ?? presentation.presentation_order ?? index + 1,
     updatedAt:
       presentation.updated_at ??
       presentation.updatedAt ??
