@@ -1,39 +1,60 @@
-import { IEventRepository } from '../../domain/repositories';
-import { Event, EventSearchParams, EventsResponse, PresentationsResponse } from '../../domain/entities';
-import { HttpClient } from '../http/HttpClient';
-import { Validators } from '../../domain/utils/validators';
-import { PresentationCache } from '../cache/PresentationCache';
+import {
+  Event,
+  EventSearchParams,
+  EventsResponse,
+  PresentationsResponse,
+} from "../../domain/entities";
+import { IEventRepository } from "../../domain/repositories";
+import { Validators } from "../../domain/utils/validators";
+import { PresentationCache } from "../cache/PresentationCache";
+import { HttpClient } from "../http/HttpClient";
+import {
+  ApiEventsResponse,
+  ApiPresentationsResponse,
+  QueryParams,
+  getResponseMeta,
+  mapApiEvent,
+  mapApiPresentation,
+} from "./apiTypes";
 
 export class EventRepository implements IEventRepository {
-  constructor(private httpClient: HttpClient, private presentationCache?: PresentationCache) {}
+  constructor(
+    private httpClient: HttpClient,
+    private presentationCache?: PresentationCache,
+  ) {}
 
   async searchEvents(params: EventSearchParams): Promise<EventsResponse> {
     Validators.validateEventSearchParams(params);
     const queryParams = this.buildEventQueryParams(params);
-    const response = await this.httpClient.get<any>('/events/', queryParams);
+    const response = await this.httpClient.get<ApiEventsResponse>(
+      "/events/",
+      queryParams,
+    );
     return this.mapEventsResponse(response.data);
   }
 
   async getEventPresentations(eventId: number): Promise<PresentationsResponse> {
-    Validators.validatePositiveInteger(eventId, 'eventId');
+    Validators.validatePositiveInteger(eventId, "eventId");
     const cached = await this.presentationCache?.get(eventId);
     if (cached) {
       return cached;
     }
 
-    const response = await this.httpClient.get<PresentationsResponse>(`/events/${eventId}/presentations/`);
-    const data = response.data;
+    const response = await this.httpClient.get<ApiPresentationsResponse>(
+      `/events/${eventId}/presentations/`,
+    );
+    const data = this.mapPresentationsResponse(response.data);
     await this.presentationCache?.set(eventId, data);
     return data;
   }
 
-  private buildEventQueryParams(params: EventSearchParams): Record<string, any> {
-    const queryParams: Record<string, any> = {};
+  private buildEventQueryParams(params: EventSearchParams): QueryParams {
+    const queryParams: QueryParams = {};
 
     if (params.eventId) queryParams.event_id = params.eventId;
     if (params.keyword) queryParams.keyword = params.keyword;
     if (params.keywordOr) queryParams.keyword_or = params.keywordOr;
-    if (params.ymd) queryParams.ymd = params.ymd.join(',');
+    if (params.ymd) queryParams.ymd = params.ymd.join(",");
     // For v2 compatibility: expand ymdFrom..ymdTo into comma-separated ymd list, while still passing v1 params
     if (params.ymdFrom) queryParams.ymd_from = params.ymdFrom;
     if (params.ymdTo) queryParams.ymd_to = params.ymdTo;
@@ -49,21 +70,21 @@ export class EventRepository implements IEventRepository {
         let guard = 0;
         while (cur <= end && guard < 366) {
           const y = cur.getFullYear();
-          const m = String(cur.getMonth() + 1).padStart(2, '0');
-          const d = String(cur.getDate()).padStart(2, '0');
+          const m = String(cur.getMonth() + 1).padStart(2, "0");
+          const d = String(cur.getDate()).padStart(2, "0");
           list.push(`${y}${m}${d}`);
           cur.setDate(cur.getDate() + 1);
           guard += 1;
         }
         if (list.length) {
-          queryParams.ymd = list.join(',');
+          queryParams.ymd = list.join(",");
         }
       }
     }
     if (params.nickname) queryParams.nickname = params.nickname;
     if (params.ownerNickname) queryParams.owner_nickname = params.ownerNickname;
     if (params.groupId) queryParams.group_id = params.groupId;
-    if (params.prefecture) queryParams.prefecture = params.prefecture;
+    if (params.prefecture) queryParams.prefecture = params.prefecture.join(",");
     if (params.count) queryParams.count = params.count;
     if (params.order) queryParams.order = params.order;
     if (params.start) queryParams.start = params.start;
@@ -71,40 +92,34 @@ export class EventRepository implements IEventRepository {
     return queryParams;
   }
 
-  private mapEventsResponse(data: any): EventsResponse {
-    // Accept both v1-like snake_case and v2-like camelCase
-    const eventsArray: any[] = data.events ?? data.event ?? [];
-
-    const events: Event[] = eventsArray.map((e: any) => ({
-      id: e.id ?? e.event_id,
-      title: e.title,
-      catchPhrase: e.catch ?? e.catchPhrase ?? '',
-      description: e.description ?? '',
-      url: e.url ?? e.event_url,
-      imageUrl: e.image_url ?? e.imageUrl ?? undefined,
-      hashTag: e.hash_tag ?? e.hashTag ?? '',
-      startedAt: e.started_at ?? e.startedAt ?? '',
-      endedAt: e.ended_at ?? e.endedAt ?? '',
-      limit: e.limit ?? undefined,
-      participantCount: e.accepted ?? e.participantCount ?? 0,
-      waitingCount: e.waiting ?? e.waitingCount ?? 0,
-      ownerNickname: e.owner_nickname ?? e.ownerNickname ?? '',
-      ownerDisplayName: e.owner_display_name ?? e.ownerDisplayName ?? '',
-      place: e.place ?? undefined,
-      address: e.address ?? undefined,
-      lat: e.lat ?? undefined,
-      lon: e.lon ?? undefined,
-      groupId: (e.group?.id ?? e.series?.id) ?? undefined,
-      groupTitle: (e.group?.title ?? e.series?.title) ?? undefined,
-      groupUrl: (e.group?.url ?? e.series?.url) ?? undefined,
-      updatedAt: e.updated_at ?? e.updatedAt ?? '',
-    }));
+  private mapEventsResponse(data: ApiEventsResponse): EventsResponse {
+    const eventsArray = data.events ?? data.event ?? [];
+    const events: Event[] = eventsArray.map(mapApiEvent);
+    const meta = getResponseMeta(data, events.length, "events");
 
     return {
-      eventsReturned: data.results_returned ?? data.eventsReturned ?? events.length,
-      eventsAvailable: data.results_available ?? data.eventsAvailable ?? events.length,
-      eventsStart: data.results_start ?? data.eventsStart ?? 1,
+      eventsReturned: meta.eventsReturned,
+      eventsAvailable: meta.eventsAvailable,
+      eventsStart: meta.eventsStart,
       events,
+    };
+  }
+
+  private mapPresentationsResponse(
+    data: ApiPresentationsResponse,
+  ): PresentationsResponse {
+    const presentationsArray = data.presentations ?? [];
+
+    return {
+      presentationsReturned:
+        data.results?.returned ??
+        data.results_returned ??
+        data.resultsReturned ??
+        data.returned ??
+        presentationsArray.length,
+      presentations: presentationsArray.map((presentation, index) =>
+        mapApiPresentation(presentation, index),
+      ),
     };
   }
 }

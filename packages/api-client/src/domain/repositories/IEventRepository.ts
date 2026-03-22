@@ -1,4 +1,8 @@
-import { EventSearchParams, EventsResponse, PresentationsResponse } from '../entities';
+import {
+  EventSearchParams,
+  EventsResponse,
+  PresentationsResponse,
+} from "../entities";
 
 export interface IEventRepository {
   searchEvents(params: EventSearchParams): Promise<EventsResponse>;

@@ -1,18 +1,22 @@
-import path from 'path';
-import pkg from '../../package.json';
-import { HttpClient } from '../infrastructure/http/HttpClient';
-import { EventRepository, GroupRepository, UserRepository } from '../infrastructure/repositories';
-import { EventService, GroupService, UserService } from './services';
+import path from "path";
+import pkg from "../../package.json";
 import {
   EventSearchParams,
   EventsResponse,
-  PresentationsResponse,
   GroupSearchParams,
   GroupsResponse,
+  PresentationsResponse,
   UserSearchParams,
   UsersResponse,
-} from '../domain/entities';
-import { PresentationCache } from '../infrastructure/cache/PresentationCache';
+} from "../domain/entities";
+import { PresentationCache } from "../infrastructure/cache/PresentationCache";
+import { HttpClient } from "../infrastructure/http/HttpClient";
+import {
+  EventRepository,
+  GroupRepository,
+  UserRepository,
+} from "../infrastructure/repositories";
+import { EventService, GroupService, UserService } from "./services";
 
 export interface ConnpassClientConfig {
   apiKey: string;
@@ -33,11 +37,11 @@ export class ConnpassClient {
 
   constructor(config: ConnpassClientConfig) {
     if (!config.apiKey) {
-      throw new Error('API key is required');
+      throw new Error("API key is required");
     }
 
     const httpClient = new HttpClient({
-      baseURL: config.baseURL ?? 'https://connpass.com/api/v2',
+      baseURL: config.baseURL ?? "https://connpass.com/api/v2",
       apiKey: config.apiKey,
       timeout: config.timeout,
       rateLimitDelay: config.rateLimitDelay,
@@ -64,7 +68,9 @@ export class ConnpassClient {
     return this.eventService.searchEvents(params);
   }
 
-  async getAllEvents(params: Omit<EventSearchParams, 'start' | 'count'> = {}): Promise<EventsResponse> {
+  async getAllEvents(
+    params: Omit<EventSearchParams, "start" | "count"> = {},
+  ): Promise<EventsResponse> {
     return this.eventService.getAllEvents(params);
   }
 
@@ -76,7 +82,9 @@ export class ConnpassClient {
     return this.groupService.searchGroups(params);
   }
 
-  async getAllGroups(params: Omit<GroupSearchParams, 'start' | 'count'> = {}): Promise<GroupsResponse> {
+  async getAllGroups(
+    params: Omit<GroupSearchParams, "start" | "count"> = {},
+  ): Promise<GroupsResponse> {
     return this.groupService.getAllGroups(params);
   }
 
@@ -84,33 +92,35 @@ export class ConnpassClient {
     return this.userService.searchUsers(params);
   }
 
-  async getAllUsers(params: Omit<UserSearchParams, 'start' | 'count'> = {}): Promise<UsersResponse> {
+  async getAllUsers(
+    params: Omit<UserSearchParams, "start" | "count"> = {},
+  ): Promise<UsersResponse> {
     return this.userService.getAllUsers(params);
   }
 
   async getUserGroups(
     userIdOrNickname: number | string,
-    params?: { count?: number; start?: number }
+    params?: { count?: number; start?: number },
   ): Promise<GroupsResponse> {
     return this.userService.getUserGroups(userIdOrNickname, params);
   }
 
   async getUserAttendedEvents(
     userIdOrNickname: number | string,
-    params?: { count?: number; order?: 1 | 2 | 3; start?: number }
+    params?: { count?: number; order?: 1 | 2 | 3; start?: number },
   ): Promise<EventsResponse> {
     return this.userService.getUserAttendedEvents(userIdOrNickname, params);
   }
 
   async getUserPresenterEvents(
     userIdOrNickname: number | string,
-    params?: { count?: number; order?: 1 | 2 | 3; start?: number }
+    params?: { count?: number; order?: 1 | 2 | 3; start?: number },
   ): Promise<EventsResponse> {
     return this.userService.getUserPresenterEvents(userIdOrNickname, params);
   }
 
   private resolveCacheEnabled(explicit?: boolean): boolean {
-    if (typeof explicit === 'boolean') {
+    if (typeof explicit === "boolean") {
       return explicit;
     }
 
@@ -131,7 +141,7 @@ export class ConnpassClient {
   }
 
   private resolveCacheTtl(explicit?: number): number {
-    if (typeof explicit === 'number' && explicit >= 0) {
+    if (typeof explicit === "number" && explicit >= 0) {
       return explicit;
     }
 
@@ -157,7 +167,7 @@ export class ConnpassClient {
       return fromEnv;
     }
 
-    return path.join(process.cwd(), 'data', 'presentation-cache.json');
+    return path.join(process.cwd(), "data", "presentation-cache.json");
   }
 
   private resolveUserAgent(explicit?: string): string {
@@ -170,7 +180,7 @@ export class ConnpassClient {
       return fromEnv;
     }
 
-    const version = pkg.version ?? '0.0.0';
+    const version = pkg.version ?? "0.0.0";
     return `@kajidog/connpass-api-client/${version}`;
   }
 }

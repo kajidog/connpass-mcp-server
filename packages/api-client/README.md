@@ -45,12 +45,6 @@ const client = new ConnpassClient({
 });
 ```
 
-If these options are omitted, the client falls back to environment variables:
-
-- `CONNPASS_PRESENTATION_CACHE_ENABLED` (`true`/`false`, defaults to `true`)
-- `CONNPASS_PRESENTATION_CACHE_TTL_MS` (millisecond TTL, defaults to `3600000`)
-- `CONNPASS_PRESENTATION_CACHE_PATH` (path to persistent cache file, defaults to `./data/presentation-cache.json`)
-
 ### Available Methods
 
 #### Events
@@ -61,6 +55,7 @@ const events = await client.searchEvents({
   keyword: 'JavaScript',
   ymdFrom: '2024-01-01',
   ymdTo: '2024-12-31',
+  prefecture: ['tokyo', 'osaka'],
   count: 20,
   start: 1
 });
@@ -80,7 +75,7 @@ const presentations = await client.getEventPresentations(12345);
 // Search groups
 const groups = await client.searchGroups({
   keyword: 'JavaScript',
-  prefecture: '東京都'
+  prefecture: 'tokyo'
 });
 
 // Get all groups
@@ -108,17 +103,30 @@ const sameResult = await client.getUserAttendedEvents('kajidog');
 const presenterEvents = await client.getUserPresenterEvents(12345);
 ```
 
-### Error Handling
-
-The client provides specific error types for different scenarios:
+#### Prefectures
 
 ```typescript
-import { 
-  ConnpassError, 
-  ConnpassApiError, 
-  ConnpassRateLimitError, 
+import { getAllPrefectures, normalizePrefecture } from '@kajidog/connpass-api-client';
+
+// Get all prefecture options
+const prefectures = getAllPrefectures();
+// [{ code: 'hokkaido', name: '北海道' }, { code: 'aomori', name: '青森県' }, ...]
+
+// Normalize prefecture input (name or code → code)
+normalizePrefecture('東京都');  // 'tokyo'
+normalizePrefecture('tokyo');   // 'tokyo'
+normalizePrefecture('invalid'); // undefined
+```
+
+### Error Handling
+
+```typescript
+import {
+  ConnpassError,
+  ConnpassApiError,
+  ConnpassRateLimitError,
   ConnpassValidationError,
-  ConnpassTimeoutError 
+  ConnpassTimeoutError
 } from '@kajidog/connpass-api-client';
 
 try {
@@ -132,8 +140,6 @@ try {
     console.log('API error:', error.statusCode, error.message);
   } else if (error instanceof ConnpassTimeoutError) {
     console.log('Request timeout');
-  } else {
-    console.log('Unknown error:', error.message);
   }
 }
 ```
@@ -150,6 +156,7 @@ try {
 - `nickname`: Participant nickname
 - `ownerNickname`: Event owner nickname
 - `groupId`: Array of group IDs
+- `prefecture`: Array of prefecture codes (e.g. `['tokyo', 'osaka']`)
 - `count`: Number of results (1-100, default 10)
 - `order`: Sort order (1: updated_at desc, 2: started_at asc, 3: started_at desc)
 - `start`: Start position for pagination
@@ -159,7 +166,7 @@ try {
 - `groupId`: Array of group IDs
 - `keyword`: Search keyword
 - `countryCode`: Country code
-- `prefecture`: Prefecture
+- `prefecture`: Prefecture code
 - `count`: Number of results (1-100, default 10)
 - `order`: Sort order
 - `start`: Start position for pagination
@@ -171,16 +178,6 @@ try {
 - `count`: Number of results (1-100, default 10)
 - `order`: Sort order
 - `start`: Start position for pagination
-
-## Features
-
-- ✅ Full TypeScript support with comprehensive type definitions
-- ✅ Rate limiting built-in (1 request per second) with optional queuing
-- ✅ Automatic pagination support with `getAll*` methods
-- ✅ Comprehensive error handling with specific error types
-- ✅ Input validation
-- ✅ Clean architecture design
-- ✅ Easy to test and extend
 
 ## License
 

@@ -1,5 +1,5 @@
-import { IGroupRepository } from '../../domain/repositories';
-import { GroupSearchParams, GroupsResponse } from '../../domain/entities';
+import { GroupSearchParams, GroupsResponse } from "../../domain/entities";
+import { IGroupRepository } from "../../domain/repositories";
 
 export class GroupService {
   constructor(private groupRepository: IGroupRepository) {}
@@ -8,7 +8,9 @@ export class GroupService {
     return this.groupRepository.searchGroups(params);
   }
 
-  async getAllGroups(params: Omit<GroupSearchParams, 'start' | 'count'> = {}): Promise<GroupsResponse> {
+  async getAllGroups(
+    params: Omit<GroupSearchParams, "start" | "count"> = {},
+  ): Promise<GroupsResponse> {
     const allGroups: GroupsResponse = {
       groupsReturned: 0,
       groupsAvailable: 0,
@@ -30,12 +32,14 @@ export class GroupService {
       allGroups.groups.push(...response.groups);
       allGroups.groupsReturned += response.groupsReturned;
 
-      if (response.groupsReturned < count || allGroups.groups.length >= response.groupsAvailable) {
+      if (
+        response.groupsReturned < count ||
+        allGroups.groups.length >= response.groupsAvailable
+      ) {
         break;
       }
 
       start += count;
-
     }
 
     return allGroups;

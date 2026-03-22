@@ -1,6 +1,12 @@
-import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
-import { stringify } from 'qs';
-import { ConnpassApiError, ConnpassRateLimitError, ConnpassTimeoutError, ConnpassError } from '../../domain/errors';
+import axios, { AxiosInstance, AxiosResponse, AxiosError } from "axios";
+import { stringify } from "qs";
+import {
+  ConnpassApiError,
+  ConnpassError,
+  ConnpassRateLimitError,
+  ConnpassTimeoutError,
+} from "../../domain/errors";
+import type { QueryParams } from "../repositories/apiTypes";
 
 export interface HttpClientConfig {
   baseURL: string;
@@ -27,13 +33,13 @@ export class HttpClient {
       baseURL: config.baseURL,
       timeout: config.timeout ?? 30000,
       headers: {
-        'X-API-Key': config.apiKey,
-        'Content-Type': 'application/json',
-        'User-Agent': config.userAgent,
+        "X-API-Key": config.apiKey,
+        "Content-Type": "application/json",
+        "User-Agent": config.userAgent,
       },
-      paramsSerializer: params => {
-        return stringify(params, { arrayFormat: 'repeat' });
-      }
+      paramsSerializer: (params) => {
+        return stringify(params, { arrayFormat: "repeat" });
+      },
     });
 
     this.setupInterceptors();
@@ -43,8 +49,8 @@ export class HttpClient {
     this.client.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-          throw new ConnpassTimeoutError('Request timeout');
+        if (error.code === "ECONNABORTED" || error.code === "ETIMEDOUT") {
+          throw new ConnpassTimeoutError("Request timeout");
         }
 
         if (error.response) {
@@ -53,24 +59,28 @@ export class HttpClient {
 
           switch (status) {
             case 429:
-              throw new ConnpassRateLimitError('Rate limit exceeded');
+              throw new ConnpassRateLimitError("Rate limit exceeded");
             case 400:
-              throw new ConnpassApiError('Bad Request', status, data);
+              throw new ConnpassApiError("Bad Request", status, data);
             case 401:
-              throw new ConnpassApiError('Unauthorized - Invalid API key', status, data);
+              throw new ConnpassApiError(
+                "Unauthorized - Invalid API key",
+                status,
+                data,
+              );
             case 403:
-              throw new ConnpassApiError('Forbidden', status, data);
+              throw new ConnpassApiError("Forbidden", status, data);
             case 404:
-              throw new ConnpassApiError('Not Found', status, data);
+              throw new ConnpassApiError("Not Found", status, data);
             case 500:
-              throw new ConnpassApiError('Internal Server Error', status, data);
+              throw new ConnpassApiError("Internal Server Error", status, data);
             default:
               throw new ConnpassApiError(`HTTP ${status}`, status, data);
           }
         }
 
         throw new ConnpassError(`Network error: ${error.message}`);
-      }
+      },
     );
   }
 
@@ -80,7 +90,7 @@ export class HttpClient {
     const waitTime = scheduledStart - now;
 
     if (waitTime > 0) {
-      await new Promise(resolve => setTimeout(resolve, waitTime));
+      await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
 
     this.lastRequestTime = Date.now();
@@ -92,33 +102,32 @@ export class HttpClient {
     }
 
     // Chain: wait for previous request -> apply rate limit -> execute request
-    const requestPromise = this.rateLimiterTail
-      .then(async () => {
-        // Wait until we can start the next request
-        await this.applyRateLimit();
+    const requestPromise = this.rateLimiterTail.then(async () => {
+      // Wait until we can start the next request
+      await this.applyRateLimit();
 
-        // Execute the request
-        const result = await fn();
+      // Execute the request
+      const result = await fn();
 
-        // Update next available time AFTER request completes
-        // This ensures the next request waits for both:
-        // 1. The previous request to complete
-        // 2. The configured delay (rateLimitDelay) after completion
-        this.nextAvailableTime = Date.now() + this.rateLimitDelay;
+      // Update next available time AFTER request completes
+      // This ensures the next request waits for both:
+      // 1. The previous request to complete
+      // 2. The configured delay (rateLimitDelay) after completion
+      this.nextAvailableTime = Date.now() + this.rateLimitDelay;
 
-        return result;
-      });
+      return result;
+    });
 
     // Update tail to wait for this request to complete before starting next
     this.rateLimiterTail = requestPromise.then(
       () => undefined,
-      () => undefined
+      () => undefined,
     );
 
     return requestPromise;
   }
 
-  async get<T>(url: string, params?: Record<string, any>): Promise<AxiosResponse<T>> {
+  async get<T>(url: string, params?: QueryParams): Promise<AxiosResponse<T>> {
     return this.scheduleRequest(() => this.client.get<T>(url, { params }));
   }
 }

@@ -5,13 +5,14 @@
   "description": "",
   "scripts": {
     "build": "pnpm -r build",
+    "changeset": "changeset",
     "dev": "pnpm -r dev",
     "lint": "biome ci .",
+    "lint:fix": "biome check --fix .",
+    "release": "changeset publish",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r --if-present test",
-    "changeset": "changeset",
     "version-packages": "changeset version",
-    "release": "pnpm build && pnpm changeset publish"
+    "test": "pnpm -r --if-present test"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^0.5.1",
