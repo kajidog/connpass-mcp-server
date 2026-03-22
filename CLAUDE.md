@@ -11,10 +11,10 @@ pnpm build
 # Type check all packages
 pnpm typecheck
 
-# Lint (Biome)
+# Lint (Biome — only correctness rules enabled, style/suspicious disabled)
 pnpm lint
 
-# Run tests (skips packages without test scripts)
+# Run tests (vitest installed but no test files currently exist)
 pnpm test
 
 # Type check single package
@@ -29,6 +29,12 @@ pnpm --filter @kajidog/connpass-mcp-server dev:http
 # Dev mode - connpass-ui (Vite dev server)
 pnpm --filter @kajidog/connpass-ui dev
 ```
+
+## Versioning & Release
+
+- Uses [Changesets](https://github.com/changesets/changesets) for versioning
+- Add a changeset file before submitting PRs with user-facing changes: `pnpm changeset`
+- Published packages: `@kajidog/connpass-mcp-server`, `@kajidog/connpass-api-client`
 
 ## Architecture
 
@@ -69,6 +75,8 @@ server.ts: createServer() → registerAllTools(deps)
 - `FORMAT_PRESETS` in `utils/formatting.ts` controls AI response detail level (`default` / `detailed` / `full`)
 - `includeDetails: boolean` parameter on search tools toggles between `default` and `detailed` presets
 - Config resolution: CLI args > env vars > defaults (declarative `ConfigDefs` system in mcp-core)
+- Tool responses have two channels: `content` (text the AI model sees) and `structuredContent` (data for the embedded UI). Both must contain all information needed by their consumer — the model cannot read `structuredContent`
+- `searchSessionStore` caches formatted search results so `browse_events` can display them via `searchSessionId` returned by `search_events`
 
 ### Build Details
 

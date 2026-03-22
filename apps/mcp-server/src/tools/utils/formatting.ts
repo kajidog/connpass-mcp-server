@@ -99,10 +99,18 @@ function compactDateLabel(isoString?: string): string | undefined {
 function summarizeEventLine(event: FormattedEvent): string {
   const date = compactDateLabel(event.schedule.start);
   const place = event.location?.place || event.location?.address;
+  const { accepted, waiting, limit } = event.participants;
+  const capacityParts: string[] = [`${accepted}人参加`];
+  if (waiting > 0) capacityParts.push(`待ち${waiting}`);
+  if (typeof limit === "number") capacityParts.push(`定員${limit}`);
+  const capacity = capacityParts.join("/");
+
   const fragments = [
+    `[id:${event.id}]`,
     date,
     event.title,
     place ? `@ ${place}` : undefined,
+    `(${capacity})`,
   ].filter(Boolean);
 
   return `- ${fragments.join(" ")}`;
@@ -361,18 +369,29 @@ export function formatEventsResponse(
   };
 }
 
+function summarizeEventBlock(event: FormattedEvent): string {
+  const headline = summarizeEventLine(event);
+  const extras: string[] = [];
+  if (event.catchPhrase) extras.push(`  ${event.catchPhrase}`);
+  if (event.group?.title) extras.push(`  group: ${event.group.title}`);
+  if (extras.length === 0) return headline;
+  return [headline, ...extras].join("\n");
+}
+
 export function summarizeEventsResponse(
   response: FormattedEventsResponse,
   label = "events",
+  options?: { searchSessionId?: string },
 ): string {
   const lines = [
     `${label}: ${response.returned} returned / ${response.available} available`,
-    ...response.events.slice(0, 5).map(summarizeEventLine),
   ];
 
-  if (response.events.length > 5) {
-    lines.push(`- ...and ${response.events.length - 5} more`);
+  if (options?.searchSessionId) {
+    lines.push(`searchSessionId: ${options.searchSessionId}`);
   }
+
+  lines.push(...response.events.map(summarizeEventBlock));
 
   return lines.join("\n");
 }

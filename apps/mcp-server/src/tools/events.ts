@@ -136,7 +136,9 @@ export function registerEventTools(deps: ToolDeps): void {
       content: [
         {
           type: "text" as const,
-          text: summarizeEventsResponse(formatted),
+          text: summarizeEventsResponse(formatted, "events", {
+            searchSessionId,
+          }),
         },
       ],
       structuredContent: {
@@ -198,7 +200,10 @@ export function registerEventTools(deps: ToolDeps): void {
 
       return {
         content: [
-          { type: "text" as const, text: summarizeEventsResponse(formatted) },
+          {
+            type: "text" as const,
+            text: `Displayed ${formatted.events.length} of ${formatted.available} events in the browser UI.`,
+          },
         ],
         structuredContent: {
           kind: "events",
