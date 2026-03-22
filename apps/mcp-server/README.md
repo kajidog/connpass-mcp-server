@@ -53,8 +53,8 @@ connpass-mcp-server
 
 | ツール名 | 説明 | 主な入力 |
 |----------|------|----------|
-| `search_events` | キーワードや日付でイベントを検索 | `query`, `from`, `to`, `prefectures`, `sort`, `includeDetails` |
-| `browse_events` | インタラクティブ UI でイベントをブラウズ | `query`, `from`, `to`, `prefectures`, `sort` |
+| `search_events` | キーワードや日付でイベントを検索し、会話用の結果と `searchSessionId` を返す | `query`, `from`, `to`, `prefectures`, `sort`, `includeDetails` |
+| `browse_events` | `search_events` の `searchSessionId` を使ってインタラクティブ UI を開く | `searchSessionId` |
 | `get_event_detail` | イベント ID を指定して詳細をフル取得 | `eventId` |
 | `get_event_presentations` | イベントの発表情報を取得 | `eventId` |
 | `search_schedule` | ユーザーのスケジュールを検索 | `userId`, `nickname`, `fromDate`, `toDate`, `includeDetails` |

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { App as McpApp } from '@modelcontextprotocol/ext-apps'
 import type { AppState, EventSearchResult, FormattedEvent, PrefectureOption, ScheduleResult, SearchFormValues } from '../types'
 import { extractEventDetailData, extractEventSearchData, extractPrefectureListData, extractScheduleData, extractToolErrorMessage } from '../utils'
 import { createConnpassToolClient, type SearchEventsParams, type SearchScheduleParams } from './connpassToolClient'
@@ -128,12 +129,12 @@ export function useConnpassApp() {
   const [prefectures, setPrefectures] = useState<PrefectureOption[]>([])
   const [displayMode, setDisplayMode] = useState<'inline' | 'fullscreen' | 'pip'>('inline')
   const [availableDisplayModes, setAvailableDisplayModes] = useState<string[]>(['inline'])
-  const appRef = useRef<any>(null)
+  const appRef = useRef<McpApp | null>(null)
   const toolClientRef = useRef<ReturnType<typeof createConnpassToolClient> | null>(null)
 
   useEffect(() => {
     let mounted = true
-    let instance: any = null
+    let instance: McpApp | null = null
 
     async function init() {
       try {
@@ -154,7 +155,7 @@ export function useConnpassApp() {
           // ontoolinput params only has { arguments }, no toolName.
           // Get tool name from hostContext.toolInfo instead.
           const hostContext = app.getHostContext?.()
-          const toolName = (hostContext as any)?.toolInfo?.tool?.name ?? ''
+          const toolName = hostContext?.toolInfo?.tool?.name ?? ''
           const isEventTool = toolName === 'search_events' || toolName === 'browse_events' || toolName === '_search_events' || toolName === ''
           if (isEventTool) {
             const formValues = normalizeSearchFormValues((input?.arguments ?? {}) as Record<string, unknown>)
@@ -285,7 +286,7 @@ export function useConnpassApp() {
         }
 
         appRef.current = app
-        toolClientRef.current = createConnpassToolClient(app as any)
+        toolClientRef.current = createConnpassToolClient(app)
         const prefectureResult = await toolClientRef.current.getPrefectures()
         const prefectureData = extractPrefectureListData(prefectureResult)
         if (mounted && prefectureData) {

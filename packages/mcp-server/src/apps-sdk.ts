@@ -64,7 +64,7 @@ export function buildCallToolResult(
   const templateUri = includeAppsSdkPayload
     ? getWidgetTemplateForTool(toolName)
     : undefined;
-  const contentItem: any = {
+  const contentItem: CallToolResult["content"][number] = {
     type: "text",
     text: toDisplayText(result),
   };

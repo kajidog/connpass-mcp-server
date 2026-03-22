@@ -84,9 +84,11 @@ export class PresentationCache {
           this.cache.set(eventId, entry);
         }
       }
-    } catch (error: any) {
-      if (error?.code !== 'ENOENT') {
-        console.warn('[api-client] Failed to load presentation cache:', error?.message ?? error);
+    } catch (error: unknown) {
+      const code = error instanceof Error && 'code' in error ? error.code : undefined;
+      const message = error instanceof Error ? error.message : String(error);
+      if (code !== 'ENOENT') {
+        console.warn('[api-client] Failed to load presentation cache:', message);
       }
     } finally {
       this.isLoaded = true;

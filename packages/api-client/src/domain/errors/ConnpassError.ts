@@ -2,7 +2,7 @@ export class ConnpassError extends Error {
   constructor(
     message: string,
     public readonly statusCode?: number,
-    public readonly response?: any
+    public readonly response?: unknown
   ) {
     super(message);
     this.name = 'ConnpassError';
@@ -11,7 +11,7 @@ export class ConnpassError extends Error {
 }
 
 export class ConnpassApiError extends ConnpassError {
-  constructor(message: string, statusCode: number, response: any) {
+  constructor(message: string, statusCode: number, response: unknown) {
     super(`API Error: ${message}`, statusCode, response);
     this.name = 'ConnpassApiError';
     Object.setPrototypeOf(this, ConnpassApiError.prototype);

@@ -2,6 +2,7 @@ import { ConnpassClient } from '@kajidog/connpass-api-client'
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { getConfig } from './config.js'
 import { registerAllTools } from './tools/index.js'
+import { SearchSessionStore } from './tools/utils/searchSessionStore.js'
 import type { ToolDeps } from './tools/utils/types.js'
 
 const config = getConfig()
@@ -22,11 +23,13 @@ export function createServer(): McpServer {
     rateLimitEnabled: config.rateLimitEnabled,
     rateLimitDelay: config.rateLimitDelayMs,
   })
+  const searchSessionStore = new SearchSessionStore()
 
   const deps: ToolDeps = {
     server,
     connpassClient,
     config,
+    searchSessionStore,
   }
 
   registerAllTools(deps)

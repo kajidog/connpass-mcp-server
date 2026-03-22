@@ -2,6 +2,16 @@ import { IUserRepository } from '../../domain/repositories';
 import { UserSearchParams, UsersResponse, GroupsResponse, EventsResponse } from '../../domain/entities';
 import { HttpClient } from '../http/HttpClient';
 import { Validators } from '../../domain/utils/validators';
+import {
+  ApiEventsResponse,
+  ApiGroupsResponse,
+  ApiUsersResponse,
+  QueryParams,
+  getResponseMeta,
+  mapApiEvent,
+  mapApiGroup,
+  mapApiUser,
+} from './apiTypes';
 
 export class UserRepository implements IUserRepository {
   constructor(private httpClient: HttpClient) {}
@@ -9,18 +19,18 @@ export class UserRepository implements IUserRepository {
   async searchUsers(params: UserSearchParams): Promise<UsersResponse> {
     Validators.validateUserSearchParams(params);
     const queryParams = this.buildUserQueryParams(params);
-    const response = await this.httpClient.get<any>('/users/', queryParams);
+    const response = await this.httpClient.get<ApiUsersResponse>('/users/', queryParams);
     return this.mapUsersResponse(response.data);
   }
 
   async getUserGroups(nickname: string, params?: { count?: number; start?: number }): Promise<GroupsResponse> {
     Validators.validateNickname(nickname, 'nickname');
-    const queryParams: Record<string, any> = {};
+    const queryParams: QueryParams = {};
     if (params?.count) queryParams.count = params.count;
     if (params?.start) queryParams.start = params.start;
 
     const encodedNickname = encodeURIComponent(nickname.trim());
-    const response = await this.httpClient.get<any>(
+    const response = await this.httpClient.get<ApiGroupsResponse>(
       `/users/${encodedNickname}/groups/`,
       queryParams
     );
@@ -32,13 +42,13 @@ export class UserRepository implements IUserRepository {
     params?: { count?: number; order?: 1 | 2 | 3; start?: number }
   ): Promise<EventsResponse> {
     Validators.validateNickname(nickname, 'nickname');
-    const queryParams: Record<string, any> = {};
+    const queryParams: QueryParams = {};
     if (params?.count) queryParams.count = params.count;
     if (params?.order) queryParams.order = params.order;
     if (params?.start) queryParams.start = params.start;
 
     const encodedNickname = encodeURIComponent(nickname.trim());
-    const response = await this.httpClient.get<any>(
+    const response = await this.httpClient.get<ApiEventsResponse>(
       `/users/${encodedNickname}/attended_events/`,
       queryParams
     );
@@ -50,21 +60,21 @@ export class UserRepository implements IUserRepository {
     params?: { count?: number; order?: 1 | 2 | 3; start?: number }
   ): Promise<EventsResponse> {
     Validators.validateNickname(nickname, 'nickname');
-    const queryParams: Record<string, any> = {};
+    const queryParams: QueryParams = {};
     if (params?.count) queryParams.count = params.count;
     if (params?.order) queryParams.order = params.order;
     if (params?.start) queryParams.start = params.start;
 
     const encodedNickname = encodeURIComponent(nickname.trim());
-    const response = await this.httpClient.get<any>(
+    const response = await this.httpClient.get<ApiEventsResponse>(
       `/users/${encodedNickname}/presenter_events/`,
       queryParams
     );
     return this.mapEventsResponse(response.data);
   }
 
-  private buildUserQueryParams(params: UserSearchParams): Record<string, any> {
-    const queryParams: Record<string, any> = {};
+  private buildUserQueryParams(params: UserSearchParams): QueryParams {
+    const queryParams: QueryParams = {};
 
     if (params.userId) queryParams.user_id = params.userId.join(',');
     if (params.nickname) queryParams.nickname = params.nickname;
@@ -75,39 +85,42 @@ export class UserRepository implements IUserRepository {
     return queryParams;
   }
 
-  private mapUsersResponse(data: any): UsersResponse {
-    const usersArray: any[] = data.users ?? data.user ?? [];
-    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
+  private mapUsersResponse(data: ApiUsersResponse): UsersResponse {
+    const usersArray = data.users ?? data.user ?? [];
+    const users = usersArray.map(mapApiUser);
+    const meta = getResponseMeta(data, users.length, 'users');
 
     return {
-      usersReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.usersReturned ?? usersArray.length,
-      usersAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.usersAvailable ?? usersArray.length,
-      usersStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.usersStart ?? 1,
-      users: usersArray,
+      usersReturned: meta.usersReturned,
+      usersAvailable: meta.usersAvailable,
+      usersStart: meta.usersStart,
+      users,
     };
   }
 
-  private mapGroupsResponse(data: any): GroupsResponse {
-    const groupsArray: any[] = data.groups ?? data.group ?? [];
-    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
+  private mapGroupsResponse(data: ApiGroupsResponse): GroupsResponse {
+    const groupsArray = data.groups ?? data.group ?? [];
+    const groups = groupsArray.map(mapApiGroup);
+    const meta = getResponseMeta(data, groups.length, 'groups');
 
     return {
-      groupsReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.groupsReturned ?? groupsArray.length,
-      groupsAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.groupsAvailable ?? groupsArray.length,
-      groupsStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.groupsStart ?? 1,
-      groups: groupsArray,
+      groupsReturned: meta.groupsReturned,
+      groupsAvailable: meta.groupsAvailable,
+      groupsStart: meta.groupsStart,
+      groups,
     };
   }
 
-  private mapEventsResponse(data: any): EventsResponse {
-    const eventsArray: any[] = data.events ?? data.event ?? [];
-    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
+  private mapEventsResponse(data: ApiEventsResponse): EventsResponse {
+    const eventsArray = data.events ?? data.event ?? [];
+    const events = eventsArray.map(mapApiEvent);
+    const meta = getResponseMeta(data, events.length, 'events');
 
     return {
-      eventsReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.eventsReturned ?? eventsArray.length,
-      eventsAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.eventsAvailable ?? eventsArray.length,
-      eventsStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.eventsStart ?? 1,
-      events: eventsArray,
+      eventsReturned: meta.eventsReturned,
+      eventsAvailable: meta.eventsAvailable,
+      eventsStart: meta.eventsStart,
+      events,
     };
   }
 }

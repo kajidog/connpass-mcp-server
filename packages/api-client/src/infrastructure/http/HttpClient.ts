@@ -1,6 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError } from 'axios';
 import { stringify } from 'qs';
 import { ConnpassApiError, ConnpassRateLimitError, ConnpassTimeoutError, ConnpassError } from '../../domain/errors';
+import type { QueryParams } from '../repositories/apiTypes';
 
 export interface HttpClientConfig {
   baseURL: string;
@@ -118,7 +119,7 @@ export class HttpClient {
     return requestPromise;
   }
 
-  async get<T>(url: string, params?: Record<string, any>): Promise<AxiosResponse<T>> {
+  async get<T>(url: string, params?: QueryParams): Promise<AxiosResponse<T>> {
     return this.scheduleRequest(() => this.client.get<T>(url, { params }));
   }
 }

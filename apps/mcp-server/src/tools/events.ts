@@ -72,7 +72,7 @@ const LIST_FORMAT_OPTIONS: FormatEventOptions = {
 }
 
 export function registerEventTools(deps: ToolDeps): void {
-  const { server, connpassClient } = deps
+  const { server, connpassClient, searchSessionStore } = deps
 
   const searchEventsHandler = async (args: Record<string, unknown>) => {
     const params = EventSearchInputSchema.parse(args ?? {})
@@ -86,30 +86,16 @@ export function registerEventTools(deps: ToolDeps): void {
     const response = await connpassClient.searchEvents(searchParams)
     const formatOptions = params.includeDetails ? FORMAT_PRESETS.detailed : FORMAT_PRESETS.default
     const formatted = formatEventsResponse(response, formatOptions)
+    const browseFormatted = formatEventsResponse(response, LIST_FORMAT_OPTIONS)
+    const searchSessionId = searchSessionStore.save(browseFormatted)
     return {
-      content: [{ type: 'text' as const, text: summarizeEventsResponse(formatted) }],
+      content: [{
+        type: 'text' as const,
+        text: summarizeEventsResponse(formatted),
+      }],
       structuredContent: {
         kind: 'events',
-        data: formatted,
-      },
-    }
-  }
-
-  const browseEventsHandler = async (args: Record<string, unknown>) => {
-    const params = EventSearchInputSchema.parse(args ?? {})
-    const searchParams = buildEventSearchParams(params)
-    if ('response' in searchParams) {
-      return {
-        ...searchParams.response,
-        isError: true,
-      }
-    }
-    const response = await connpassClient.searchEvents(searchParams)
-    const formatted = formatEventsResponse(response, LIST_FORMAT_OPTIONS)
-    return {
-      content: [{ type: 'text' as const, text: summarizeEventsResponse(formatted) }],
-      structuredContent: {
-        kind: 'events',
+        searchSessionId,
         data: formatted,
       },
     }
@@ -118,19 +104,44 @@ export function registerEventTools(deps: ToolDeps): void {
   // search_events - 公開ツール（UI なし、モデル向け）
   registerAppToolIfEnabled(server, 'search_events', {
     title: 'Search Events',
-    description: 'Search Connpass events and return results as text. Use this for answering questions, recommending events, or when the user needs event information in the conversation.',
+    description: 'Search Connpass events and return results as text for reasoning and recommendations. Use this whenever the user asks about events.',
     inputSchema: EventSearchInputSchema,
   }, searchEventsHandler)
 
   // browse_events - 公開ツール（UI あり、対話ブラウズ向け）
   registerAppToolIfEnabled(server, 'browse_events', {
     title: 'Browse Events',
-    description: 'Show search results in the interactive event browser UI. Call this ONCE after using search_events to display the results visually, or when the user explicitly asks to browse events. Do NOT call this multiple times or use it as a substitute for search_events.',
-    inputSchema: EventSearchInputSchema,
+    description: 'Display previously searched events in the interactive event browser UI. Use this proactively when the user wants to browse event options, scan many candidates, compare events, or inspect results visually. The UI lets the user refine and re-run searches directly, so prefer this for event exploration. Call this ONCE with the searchSessionId returned by search_events. Do not use this to search again.',
+    inputSchema: z.object({
+      searchSessionId: z.uuid().describe('Session ID returned by search_events'),
+    }),
     _meta: {
       ui: { resourceUri: connpassResourceUri },
     },
-  }, browseEventsHandler)
+  }, async (args: Record<string, unknown>) => {
+    const { searchSessionId } = z.object({
+      searchSessionId: z.uuid(),
+    }).parse(args ?? {})
+    const formatted = searchSessionStore.get(searchSessionId)
+    if (!formatted) {
+      return {
+        content: [{
+          type: 'text' as const,
+          text: 'Search session not found or expired. Run search_events again, then call browse_events once with the returned searchSessionId.',
+        }],
+        isError: true,
+      }
+    }
+
+    return {
+      content: [{ type: 'text' as const, text: summarizeEventsResponse(formatted) }],
+      structuredContent: {
+        kind: 'events',
+        searchSessionId,
+        data: formatted,
+      },
+    }
+  })
 
   // get_event_presentations - 公開ツール
   registerAppToolIfEnabled(server, 'get_event_presentations', {
