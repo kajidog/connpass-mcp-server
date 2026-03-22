@@ -5,17 +5,16 @@
       "biome.json",
       "package.json",
       ".github/**/*.yml",
-      "packages/mcp-server/package.json",
-      "packages/mcp-server/src/**/*.ts",
-      "packages/mcp-server/test/**/*.ts",
-      "packages/mcp-server/tsconfig.vitest.json",
-      "packages/mcp-server/vitest.config.ts"
+      "apps/mcp-server/package.json",
+      "apps/mcp-server/src/**/*.ts",
+      "packages/api-client/**/*.ts",
+      "packages/mcp-core/src/**/*.ts",
+      "packages/connpass-ui/src/**/*.tsx",
+      "packages/connpass-ui/src/**/*.ts"
     ],
     "ignore": [
       "**/dist/**",
-      "**/node_modules/**",
-      "packages/api-client/**",
-      ".changeset/**"
+      "**/node_modules/**"
     ]
   },
   "formatter": {

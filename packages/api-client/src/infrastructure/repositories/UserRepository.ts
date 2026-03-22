@@ -9,8 +9,8 @@ export class UserRepository implements IUserRepository {
   async searchUsers(params: UserSearchParams): Promise<UsersResponse> {
     Validators.validateUserSearchParams(params);
     const queryParams = this.buildUserQueryParams(params);
-    const response = await this.httpClient.get<UsersResponse>('/users/', queryParams);
-    return response.data;
+    const response = await this.httpClient.get<any>('/users/', queryParams);
+    return this.mapUsersResponse(response.data);
   }
 
   async getUserGroups(nickname: string, params?: { count?: number; start?: number }): Promise<GroupsResponse> {
@@ -20,11 +20,11 @@ export class UserRepository implements IUserRepository {
     if (params?.start) queryParams.start = params.start;
 
     const encodedNickname = encodeURIComponent(nickname.trim());
-    const response = await this.httpClient.get<GroupsResponse>(
+    const response = await this.httpClient.get<any>(
       `/users/${encodedNickname}/groups/`,
       queryParams
     );
-    return response.data;
+    return this.mapGroupsResponse(response.data);
   }
 
   async getUserAttendedEvents(
@@ -38,11 +38,11 @@ export class UserRepository implements IUserRepository {
     if (params?.start) queryParams.start = params.start;
 
     const encodedNickname = encodeURIComponent(nickname.trim());
-    const response = await this.httpClient.get<EventsResponse>(
+    const response = await this.httpClient.get<any>(
       `/users/${encodedNickname}/attended_events/`,
       queryParams
     );
-    return response.data;
+    return this.mapEventsResponse(response.data);
   }
 
   async getUserPresenterEvents(
@@ -56,11 +56,11 @@ export class UserRepository implements IUserRepository {
     if (params?.start) queryParams.start = params.start;
 
     const encodedNickname = encodeURIComponent(nickname.trim());
-    const response = await this.httpClient.get<EventsResponse>(
+    const response = await this.httpClient.get<any>(
       `/users/${encodedNickname}/presenter_events/`,
       queryParams
     );
-    return response.data;
+    return this.mapEventsResponse(response.data);
   }
 
   private buildUserQueryParams(params: UserSearchParams): Record<string, any> {
@@ -73,5 +73,41 @@ export class UserRepository implements IUserRepository {
     if (params.start) queryParams.start = params.start;
 
     return queryParams;
+  }
+
+  private mapUsersResponse(data: any): UsersResponse {
+    const usersArray: any[] = data.users ?? data.user ?? [];
+    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
+
+    return {
+      usersReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.usersReturned ?? usersArray.length,
+      usersAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.usersAvailable ?? usersArray.length,
+      usersStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.usersStart ?? 1,
+      users: usersArray,
+    };
+  }
+
+  private mapGroupsResponse(data: any): GroupsResponse {
+    const groupsArray: any[] = data.groups ?? data.group ?? [];
+    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
+
+    return {
+      groupsReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.groupsReturned ?? groupsArray.length,
+      groupsAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.groupsAvailable ?? groupsArray.length,
+      groupsStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.groupsStart ?? 1,
+      groups: groupsArray,
+    };
+  }
+
+  private mapEventsResponse(data: any): EventsResponse {
+    const eventsArray: any[] = data.events ?? data.event ?? [];
+    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
+
+    return {
+      eventsReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.eventsReturned ?? eventsArray.length,
+      eventsAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.eventsAvailable ?? eventsArray.length,
+      eventsStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.eventsStart ?? 1,
+      events: eventsArray,
+    };
   }
 }

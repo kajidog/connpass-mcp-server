@@ -8,14 +8,9 @@
     "dev": "pnpm -r dev",
     "lint": "biome ci .",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm -r --if-present test",
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "release": "pnpm build && pnpm changeset publish"
+    "test": "pnpm -r --if-present test"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.1",
-    "@changesets/cli": "^2.29.7",
     "@biomejs/biome": "^1.7.1",
     "@types/node": "^20.0.0",
     "typescript": "^5.0.0"

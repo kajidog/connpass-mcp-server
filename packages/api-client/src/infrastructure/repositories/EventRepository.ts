@@ -63,7 +63,7 @@ export class EventRepository implements IEventRepository {
     if (params.nickname) queryParams.nickname = params.nickname;
     if (params.ownerNickname) queryParams.owner_nickname = params.ownerNickname;
     if (params.groupId) queryParams.group_id = params.groupId;
-    if (params.prefecture) queryParams.prefecture = params.prefecture;
+    if (params.prefecture) queryParams.prefecture = params.prefecture.join(',');
     if (params.count) queryParams.count = params.count;
     if (params.order) queryParams.order = params.order;
     if (params.start) queryParams.start = params.start;
@@ -74,6 +74,7 @@ export class EventRepository implements IEventRepository {
   private mapEventsResponse(data: any): EventsResponse {
     // Accept both v1-like snake_case and v2-like camelCase
     const eventsArray: any[] = data.events ?? data.event ?? [];
+    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
 
     const events: Event[] = eventsArray.map((e: any) => ({
       id: e.id ?? e.event_id,
@@ -101,9 +102,9 @@ export class EventRepository implements IEventRepository {
     }));
 
     return {
-      eventsReturned: data.results_returned ?? data.eventsReturned ?? events.length,
-      eventsAvailable: data.results_available ?? data.eventsAvailable ?? events.length,
-      eventsStart: data.results_start ?? data.eventsStart ?? 1,
+      eventsReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.eventsReturned ?? events.length,
+      eventsAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.eventsAvailable ?? events.length,
+      eventsStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.eventsStart ?? 1,
       events,
     };
   }

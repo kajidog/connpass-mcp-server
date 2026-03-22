@@ -9,8 +9,8 @@ export class GroupRepository implements IGroupRepository {
   async searchGroups(params: GroupSearchParams): Promise<GroupsResponse> {
     Validators.validateGroupSearchParams(params);
     const queryParams = this.buildGroupQueryParams(params);
-    const response = await this.httpClient.get<GroupsResponse>('/groups/', queryParams);
-    return response.data;
+    const response = await this.httpClient.get<any>('/groups/', queryParams);
+    return this.mapGroupsResponse(response.data);
   }
 
   private buildGroupQueryParams(params: GroupSearchParams): Record<string, any> {
@@ -25,5 +25,17 @@ export class GroupRepository implements IGroupRepository {
     if (params.start) queryParams.start = params.start;
 
     return queryParams;
+  }
+
+  private mapGroupsResponse(data: any): GroupsResponse {
+    const groupsArray: any[] = data.groups ?? data.group ?? [];
+    const results = data.results && typeof data.results === 'object' ? data.results : undefined;
+
+    return {
+      groupsReturned: results?.returned ?? data.results_returned ?? data.resultsReturned ?? data.returned ?? data.groupsReturned ?? groupsArray.length,
+      groupsAvailable: results?.available ?? data.results_available ?? data.resultsAvailable ?? data.available ?? data.groupsAvailable ?? groupsArray.length,
+      groupsStart: results?.start ?? data.results_start ?? data.resultsStart ?? data.start ?? data.groupsStart ?? 1,
+      groups: groupsArray,
+    };
   }
 }
