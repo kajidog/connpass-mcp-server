@@ -1,6 +1,6 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-import { PresentationsResponse } from '../../domain/entities';
+import { promises as fs } from "fs";
+import path from "path";
+import { PresentationsResponse } from "../../domain/entities";
 
 interface CacheEntry {
   expiresAt: number;
@@ -52,7 +52,8 @@ export class PresentationCache {
     }
 
     await this.ensureLoaded();
-    const expiresAt = this.ttlMs === 0 ? Number.MAX_SAFE_INTEGER : Date.now() + this.ttlMs;
+    const expiresAt =
+      this.ttlMs === 0 ? Number.MAX_SAFE_INTEGER : Date.now() + this.ttlMs;
     this.cache.set(eventId, { data, expiresAt });
     await this.persist();
   }
@@ -72,7 +73,7 @@ export class PresentationCache {
     }
 
     try {
-      const raw = await fs.readFile(this.filePath, 'utf-8');
+      const raw = await fs.readFile(this.filePath, "utf-8");
       const parsed = JSON.parse(raw) as Record<string, CacheEntry>;
       const now = Date.now();
       for (const [key, entry] of Object.entries(parsed)) {
@@ -85,10 +86,14 @@ export class PresentationCache {
         }
       }
     } catch (error: unknown) {
-      const code = error instanceof Error && 'code' in error ? error.code : undefined;
+      const code =
+        error instanceof Error && "code" in error ? error.code : undefined;
       const message = error instanceof Error ? error.message : String(error);
-      if (code !== 'ENOENT') {
-        console.warn('[api-client] Failed to load presentation cache:', message);
+      if (code !== "ENOENT") {
+        console.warn(
+          "[api-client] Failed to load presentation cache:",
+          message,
+        );
       }
     } finally {
       this.isLoaded = true;
@@ -109,6 +114,10 @@ export class PresentationCache {
       serializable[String(eventId)] = entry;
     }
 
-    await fs.writeFile(this.filePath, JSON.stringify(serializable, null, 2), 'utf-8');
+    await fs.writeFile(
+      this.filePath,
+      JSON.stringify(serializable, null, 2),
+      "utf-8",
+    );
   }
 }

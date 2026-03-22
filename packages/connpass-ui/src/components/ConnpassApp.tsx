@@ -1,7 +1,7 @@
-import { useConnpassApp } from '../hooks/useConnpassApp'
-import { EventDetail } from './EventDetail'
-import { EventSearch } from './EventSearch'
-import { ScheduleView } from './ScheduleView'
+import { useConnpassApp } from "../hooks/useConnpassApp";
+import { EventDetail } from "./EventDetail";
+import { EventSearch } from "./EventSearch";
+import { ScheduleView } from "./ScheduleView";
 
 export function ConnpassApp() {
   const {
@@ -15,51 +15,47 @@ export function ConnpassApp() {
     toggleFullscreen,
     displayMode,
     fullscreenAvailable,
-  } = useConnpassApp()
+  } = useConnpassApp();
 
   const content = (() => {
-  if (state.viewMode === 'detail' && state.selectedEvent) {
-    return (
-      <EventDetail
-        event={state.selectedEvent}
-        loading={state.detailLoading}
-        error={state.error}
-        onBack={goBack}
-        onOpenLink={openLink}
-      />
-    )
-  }
+    if (state.viewMode === "detail" && state.selectedEvent) {
+      return (
+        <EventDetail
+          event={state.selectedEvent}
+          loading={state.detailLoading}
+          error={state.error}
+          onBack={goBack}
+          onOpenLink={openLink}
+        />
+      );
+    }
 
-  if (state.viewMode === 'schedule') {
+    if (state.viewMode === "schedule") {
+      return (
+        <ScheduleView
+          result={state.scheduleResult}
+          initialNickname={state.scheduleNickname}
+          loading={state.loading}
+          error={state.error}
+          onSearchSchedule={searchSchedule}
+          onSelectEvent={selectEvent}
+        />
+      );
+    }
+
     return (
-      <ScheduleView
-        result={state.scheduleResult}
-        initialNickname={state.scheduleNickname}
+      <EventSearch
+        result={state.searchResult}
+        prefectures={prefectures}
+        formValues={state.searchFormValues}
+        hasSearched={state.hasSearched}
         loading={state.loading}
         error={state.error}
-        onSearchSchedule={searchSchedule}
+        onSearch={searchEvents}
         onSelectEvent={selectEvent}
       />
-    )
-  }
+    );
+  })();
 
-  return (
-    <EventSearch
-      result={state.searchResult}
-      prefectures={prefectures}
-      formValues={state.searchFormValues}
-      hasSearched={state.hasSearched}
-      loading={state.loading}
-      error={state.error}
-      onSearch={searchEvents}
-      onSelectEvent={selectEvent}
-    />
-  )
-  })()
-
-  return (
-    <div className="flex flex-col">
-      {content}
-    </div>
-  )
+  return <div className="flex flex-col">{content}</div>;
 }

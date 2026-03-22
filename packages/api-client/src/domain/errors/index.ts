@@ -1,1 +1,1 @@
-export * from './ConnpassError';
+export * from "./ConnpassError";

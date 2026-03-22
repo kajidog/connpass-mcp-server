@@ -1,3 +1,3 @@
-export * from './IEventRepository';
-export * from './IGroupRepository';
-export * from './IUserRepository';
+export * from "./IEventRepository";
+export * from "./IGroupRepository";
+export * from "./IUserRepository";

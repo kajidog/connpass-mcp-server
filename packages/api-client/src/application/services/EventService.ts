@@ -1,5 +1,9 @@
-import { IEventRepository } from '../../domain/repositories';
-import { EventSearchParams, EventsResponse, PresentationsResponse } from '../../domain/entities';
+import {
+  EventSearchParams,
+  EventsResponse,
+  PresentationsResponse,
+} from "../../domain/entities";
+import { IEventRepository } from "../../domain/repositories";
 
 export class EventService {
   constructor(private eventRepository: IEventRepository) {}
@@ -10,12 +14,14 @@ export class EventService {
 
   async getEventPresentations(eventId: number): Promise<PresentationsResponse> {
     if (eventId <= 0) {
-      throw new Error('Event ID must be a positive number');
+      throw new Error("Event ID must be a positive number");
     }
     return this.eventRepository.getEventPresentations(eventId);
   }
 
-  async getAllEvents(params: Omit<EventSearchParams, 'start' | 'count'> = {}): Promise<EventsResponse> {
+  async getAllEvents(
+    params: Omit<EventSearchParams, "start" | "count"> = {},
+  ): Promise<EventsResponse> {
     const allEvents: EventsResponse = {
       eventsReturned: 0,
       eventsAvailable: 0,
@@ -37,12 +43,14 @@ export class EventService {
       allEvents.events.push(...response.events);
       allEvents.eventsReturned += response.eventsReturned;
 
-      if (response.eventsReturned < count || allEvents.events.length >= response.eventsAvailable) {
+      if (
+        response.eventsReturned < count ||
+        allEvents.events.length >= response.eventsAvailable
+      ) {
         break;
       }
 
       start += count;
-
     }
 
     return allEvents;

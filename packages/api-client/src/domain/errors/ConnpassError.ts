@@ -2,10 +2,10 @@ export class ConnpassError extends Error {
   constructor(
     message: string,
     public readonly statusCode?: number,
-    public readonly response?: unknown
+    public readonly response?: unknown,
   ) {
     super(message);
-    this.name = 'ConnpassError';
+    this.name = "ConnpassError";
     Object.setPrototypeOf(this, ConnpassError.prototype);
   }
 }
@@ -13,15 +13,15 @@ export class ConnpassError extends Error {
 export class ConnpassApiError extends ConnpassError {
   constructor(message: string, statusCode: number, response: unknown) {
     super(`API Error: ${message}`, statusCode, response);
-    this.name = 'ConnpassApiError';
+    this.name = "ConnpassApiError";
     Object.setPrototypeOf(this, ConnpassApiError.prototype);
   }
 }
 
 export class ConnpassRateLimitError extends ConnpassError {
-  constructor(message = 'Rate limit exceeded') {
+  constructor(message = "Rate limit exceeded") {
     super(message, 429);
-    this.name = 'ConnpassRateLimitError';
+    this.name = "ConnpassRateLimitError";
     Object.setPrototypeOf(this, ConnpassRateLimitError.prototype);
   }
 }
@@ -29,15 +29,15 @@ export class ConnpassRateLimitError extends ConnpassError {
 export class ConnpassValidationError extends ConnpassError {
   constructor(message: string) {
     super(`Validation Error: ${message}`);
-    this.name = 'ConnpassValidationError';
+    this.name = "ConnpassValidationError";
     Object.setPrototypeOf(this, ConnpassValidationError.prototype);
   }
 }
 
 export class ConnpassTimeoutError extends ConnpassError {
-  constructor(message = 'Request timeout') {
+  constructor(message = "Request timeout") {
     super(message);
-    this.name = 'ConnpassTimeoutError';
+    this.name = "ConnpassTimeoutError";
     Object.setPrototypeOf(this, ConnpassTimeoutError.prototype);
   }
 }

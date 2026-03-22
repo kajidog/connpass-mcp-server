@@ -12,10 +12,7 @@
       "packages/connpass-ui/src/**/*.tsx",
       "packages/connpass-ui/src/**/*.ts"
     ],
-    "ignore": [
-      "**/dist/**",
-      "**/node_modules/**"
-    ]
+    "ignore": ["**/dist/**", "**/node_modules/**"]
   },
   "formatter": {
     "enabled": true,

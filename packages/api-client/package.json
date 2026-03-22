@@ -20,10 +20,7 @@
     "@types/qs": "^6.9.10",
     "typescript": "^5.0.0"
   },
-  "keywords": [
-    "connpass",
-    "typescript"
-  ],
+  "keywords": ["connpass", "typescript"],
   "type": "commonjs",
   "license": "MIT",
   "repository": {
@@ -38,10 +35,7 @@
   "engines": {
     "node": ">=18"
   },
-  "files": [
-    "dist",
-    "README.md"
-  ],
+  "files": ["dist", "README.md"],
   "publishConfig": {
     "access": "public"
   },

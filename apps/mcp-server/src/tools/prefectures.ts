@@ -1,77 +1,93 @@
-import { getAllPrefectures, normalizePrefecture } from '@kajidog/connpass-api-client'
-import { z } from 'zod'
-import type { ToolDeps } from './utils/types.js'
-import { registerAppToolIfEnabled } from './utils/registration.js'
+import {
+  getAllPrefectures,
+  normalizePrefecture,
+} from "@kajidog/connpass-api-client";
+import { z } from "zod";
+import { registerAppToolIfEnabled } from "./utils/registration.js";
+import type { ToolDeps } from "./utils/types.js";
 
-const EmptyInputSchema = z.object({})
+const EmptyInputSchema = z.object({});
 
 function buildPrefectureListResult(invalid: string[] = []) {
-  const prefectures = getAllPrefectures()
+  const prefectures = getAllPrefectures();
   const payload = {
     invalid,
     prefectures,
-  }
+  };
 
-  const invalidText = invalid.length > 0
-    ? `指定された都道府県が見つかりません: ${invalid.join(', ')}\n`
-    : ''
+  const invalidText =
+    invalid.length > 0
+      ? `指定された都道府県が見つかりません: ${invalid.join(", ")}\n`
+      : "";
 
   return {
     content: [
       {
-        type: 'text' as const,
-        text: `${invalidText}利用可能な都道府県一覧: ${prefectures.map((item) => `${item.name} (${item.code})`).join(', ')}`,
+        type: "text" as const,
+        text: `${invalidText}利用可能な都道府県一覧: ${prefectures.map((item) => `${item.name} (${item.code})`).join(", ")}`,
       },
     ],
     structuredContent: {
-      kind: 'prefectures',
+      kind: "prefectures",
       data: payload,
     },
-  }
+  };
 }
 
 export function resolvePrefectureInputs(
   values?: string | string[],
-): { prefectures?: string[] } | { response: ReturnType<typeof buildPrefectureListResult> } {
-  if (!values) return {}
+):
+  | { prefectures?: string[] }
+  | { response: ReturnType<typeof buildPrefectureListResult> } {
+  if (!values) return {};
 
-  const inputs = Array.isArray(values) ? values : [values]
-  const prefectures: string[] = []
-  const invalid: string[] = []
+  const inputs = Array.isArray(values) ? values : [values];
+  const prefectures: string[] = [];
+  const invalid: string[] = [];
 
   for (const value of inputs) {
-    const normalized = normalizePrefecture(value)
+    const normalized = normalizePrefecture(value);
     if (!normalized) {
-      invalid.push(value)
-      continue
+      invalid.push(value);
+      continue;
     }
-    prefectures.push(normalized)
+    prefectures.push(normalized);
   }
 
   if (invalid.length > 0) {
-    return { response: buildPrefectureListResult(invalid) }
+    return { response: buildPrefectureListResult(invalid) };
   }
 
-  return { prefectures }
+  return { prefectures };
 }
 
 export function registerPrefectureTools(deps: ToolDeps): void {
-  const { server } = deps
+  const { server } = deps;
 
-  registerAppToolIfEnabled(server, 'list_prefectures', {
-    title: 'List Prefectures',
-    description: 'List supported prefectures and region codes for filtering',
-    inputSchema: EmptyInputSchema,
-  }, async () => buildPrefectureListResult())
+  registerAppToolIfEnabled(
+    server,
+    "list_prefectures",
+    {
+      title: "List Prefectures",
+      description: "List supported prefectures and region codes for filtering",
+      inputSchema: EmptyInputSchema,
+    },
+    async () => buildPrefectureListResult(),
+  );
 
-  registerAppToolIfEnabled(server, '_get_prefectures', {
-    title: 'Get Prefectures (UI)',
-    description: 'Internal: list supported prefectures for the UI',
-    inputSchema: EmptyInputSchema,
-    _meta: {
-      ui: {
-        visibility: ['app'],
+  registerAppToolIfEnabled(
+    server,
+    "_get_prefectures",
+    {
+      title: "Get Prefectures (UI)",
+      description: "Internal: list supported prefectures for the UI",
+      inputSchema: EmptyInputSchema,
+      _meta: {
+        ui: {
+          visibility: ["app"],
+        },
       },
     },
-  }, async () => buildPrefectureListResult())
+    async () => buildPrefectureListResult(),
+  );
 }
