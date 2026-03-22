@@ -1,5 +1,16 @@
 # @kajidog/connpass-mcp-server
 
+## 0.4.1
+
+### Patch Changes
+
+- [`2f5c8c0`](https://github.com/kajidog/connpass-mcp-server/commit/2f5c8c008329c3314ac6a40c43baed2b3b853e69) Thanks [@kajidog](https://github.com/kajidog)! - fix: search_events のテキストレスポンスにイベント ID・参加者数・キャッチフレーズ・グループ名・searchSessionId を含めるように改善
+
+  - summarizeEventLine にイベント ID、参加者数(参加/待ち/定員)を追加
+  - キャッチフレーズとグループ名を各イベントのサマリーに表示
+  - 5 件制限を撤廃し検索結果の全件をサマリー表示
+  - searchSessionId をテキストレスポンスに含め、browse_events を呼び出せるように修正
+
 ## 0.4.0
 
 ### Minor Changes
