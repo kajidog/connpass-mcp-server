@@ -1,10 +1,7 @@
 import { z } from "zod";
-import {
-  formatEvent,
-  formatPresentationsResponse,
-} from "../utils/formatting.js";
 import { registerAppToolIfEnabled } from "../utils/registration.js";
 import { connpassResourceUri } from "../utils/resource.js";
+import { fetchEventDetail } from "../utils/shared.js";
 import type { ToolDeps } from "../utils/types.js";
 
 const UIEventDetailInputSchema = z.object({
@@ -21,6 +18,11 @@ export function registerUIEventDetailTool(deps: ToolDeps): void {
       title: "Get Event Detail (UI)",
       description: "Internal: fetch full event details for the detail view",
       inputSchema: UIEventDetailInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
       _meta: {
         ui: {
           resourceUri: connpassResourceUri,
@@ -30,24 +32,11 @@ export function registerUIEventDetailTool(deps: ToolDeps): void {
     },
     async (args: Record<string, unknown>) => {
       const { eventId } = UIEventDetailInputSchema.parse(args ?? {});
+      const { formatted, presentations } = await fetchEventDetail(
+        connpassClient,
+        eventId,
+      );
 
-      const [eventsResponse, presentationsResponse] = await Promise.all([
-        connpassClient.searchEvents({
-          eventId: [eventId],
-          count: 1,
-        }),
-        connpassClient.getEventPresentations(eventId).catch(() => undefined),
-      ]);
-
-      const event = eventsResponse.events[0];
-      if (!event) {
-        throw new Error(`Event with ID ${eventId} not found.`);
-      }
-
-      const formatted = formatEvent(event);
-      const presentations = presentationsResponse
-        ? formatPresentationsResponse(presentationsResponse)
-        : undefined;
       const detailEvent = presentations?.presentations?.length
         ? { ...formatted, presentations: presentations.presentations }
         : formatted;

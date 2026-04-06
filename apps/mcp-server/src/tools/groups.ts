@@ -7,7 +7,7 @@ import {
   GROUP_SORT_MAP,
   applyPagination,
 } from "./utils/shared.js";
-import type { ToolDeps } from "./utils/types.js";
+import { type ToolDeps, paginationSchema } from "./utils/types.js";
 
 const GroupSearchInputSchema = z.object({
   query: z
@@ -25,14 +25,7 @@ const GroupSearchInputSchema = z.object({
     .min(1)
     .describe("Prefecture name to filter by")
     .optional(),
-  page: z.number().int().min(1).describe("1-based page number").optional(),
-  pageSize: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .describe("Groups per page (default 20)")
-    .optional(),
+  ...paginationSchema,
   sort: z
     .enum(GROUP_SORT_KEYS)
     .describe("Ranking by activity, members, or recency")
@@ -68,6 +61,11 @@ export function registerGroupTools(deps: ToolDeps): void {
       title: "Search Groups",
       description: "Find Connpass groups with simple filters",
       inputSchema: GroupSearchInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     async (args: Record<string, unknown>) => {
       const params = GroupSearchInputSchema.parse(args ?? {});

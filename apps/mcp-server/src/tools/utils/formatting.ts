@@ -396,30 +396,33 @@ export function summarizeEventsResponse(
   return lines.join("\n");
 }
 
-export function summarizeGroupsResponse(response: GroupsResponse): string {
-  const lines = [
-    `groups: ${response.groupsReturned} returned / ${response.groupsAvailable} available`,
-    ...response.groups.slice(0, 5).map(summarizeGroupLine),
-  ];
-
-  if (response.groups.length > 5) {
-    lines.push(`- ...and ${response.groups.length - 5} more`);
+function buildLimitedSummary<T>(
+  header: string,
+  items: T[],
+  formatLine: (item: T) => string,
+  limit = 5,
+): string {
+  const lines = [header, ...items.slice(0, limit).map(formatLine)];
+  if (items.length > limit) {
+    lines.push(`- ...and ${items.length - limit} more`);
   }
-
   return lines.join("\n");
 }
 
+export function summarizeGroupsResponse(response: GroupsResponse): string {
+  return buildLimitedSummary(
+    `groups: ${response.groupsReturned} returned / ${response.groupsAvailable} available`,
+    response.groups,
+    summarizeGroupLine,
+  );
+}
+
 export function summarizeUsersResponse(response: UsersResponse): string {
-  const lines = [
+  return buildLimitedSummary(
     `users: ${response.usersReturned} returned / ${response.usersAvailable} available`,
-    ...response.users.slice(0, 5).map(summarizeUserLine),
-  ];
-
-  if (response.users.length > 5) {
-    lines.push(`- ...and ${response.users.length - 5} more`);
-  }
-
-  return lines.join("\n");
+    response.users,
+    summarizeUserLine,
+  );
 }
 
 export function formatEventList(

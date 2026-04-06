@@ -2,6 +2,7 @@ import { ConnpassClient } from "@kajidog/connpass-api-client";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { getConfig } from "./config.js";
 import { registerAllTools } from "./tools/index.js";
+import { setDisabledTools } from "./tools/utils/registration.js";
 import { SearchSessionStore } from "./tools/utils/searchSessionStore.js";
 import type { ToolDeps } from "./tools/utils/types.js";
 
@@ -62,6 +63,7 @@ export function createServer(): McpServer {
     searchSessionStore,
   };
 
+  setDisabledTools(config.disableTools);
   registerAllTools(deps);
 
   return server;
