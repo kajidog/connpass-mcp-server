@@ -147,8 +147,29 @@ export function applyPagination(
   return pagination;
 }
 
-// userId -> nickname キャッシュ
-const userNicknameCache = new Map<number, string>();
+// userId -> nickname キャッシュ（TTL付き）
+const NICKNAME_CACHE_TTL_MS = 5 * 60 * 1000; // 5分
+const userNicknameCache = new Map<
+  number,
+  { nickname: string; expiresAt: number }
+>();
+
+function getCachedNickname(userId: number): string | undefined {
+  const entry = userNicknameCache.get(userId);
+  if (!entry) return undefined;
+  if (Date.now() > entry.expiresAt) {
+    userNicknameCache.delete(userId);
+    return undefined;
+  }
+  return entry.nickname;
+}
+
+function setCachedNickname(userId: number, nickname: string): void {
+  userNicknameCache.set(userId, {
+    nickname,
+    expiresAt: Date.now() + NICKNAME_CACHE_TTL_MS,
+  });
+}
 
 export async function resolveUserNickname(
   connpassClient: ConnpassClient,
@@ -172,7 +193,7 @@ export async function resolveUserNickname(
     const user = userSearchResponse.users[0];
     resolvedUserId = user.id;
     userNickname = user.nickname;
-    userNicknameCache.set(user.id, user.nickname);
+    setCachedNickname(user.id, user.nickname);
   }
 
   if (!resolvedUserId) {
@@ -182,7 +203,7 @@ export async function resolveUserNickname(
   }
 
   if (!userNickname) {
-    const cached = userNicknameCache.get(resolvedUserId);
+    const cached = getCachedNickname(resolvedUserId);
     if (cached) {
       userNickname = cached;
     } else {
@@ -196,7 +217,7 @@ export async function resolveUserNickname(
         throw new Error(`User with ID ${resolvedUserId} not found.`);
       }
       userNickname = found.nickname;
-      userNicknameCache.set(resolvedUserId, found.nickname);
+      setCachedNickname(resolvedUserId, found.nickname);
     }
   }
 
