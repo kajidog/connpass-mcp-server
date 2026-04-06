@@ -49,6 +49,14 @@ const connpassConfigDefs: ConfigDefs = {
     default: 1000,
     valueName: "<ms>",
   },
+  disableTools: {
+    cli: "--disable-tools",
+    env: "CONNPASS_DISABLE_TOOLS",
+    description: "Comma-separated tool names to disable",
+    group: "Connpass Configuration",
+    type: "string[]",
+    valueName: "<tools>",
+  },
 };
 
 export const allConfigDefs: ConfigDefs = {
@@ -61,6 +69,7 @@ export interface ServerConfig extends BaseServerConfig {
   defaultUserId?: number;
   rateLimitEnabled: boolean;
   rateLimitDelayMs: number;
+  disableTools?: string[];
 }
 
 function createDefaultConfig(): ServerConfig {

@@ -10,6 +10,15 @@ import type {
   ZodRawShapeCompat,
 } from "@modelcontextprotocol/sdk/server/zod-compat.js";
 
+let disabledToolNames: ReadonlySet<string> = new Set();
+
+/**
+ * 無効化するツール名のセットを設定する
+ */
+export function setDisabledTools(names: string[] | undefined): void {
+  disabledToolNames = new Set(names ?? []);
+}
+
 /**
  * MCP Apps Extension 対応のツール登録ヘルパー
  */
@@ -23,6 +32,8 @@ export function registerAppToolIfEnabled(
     cb: ToolCallback<undefined | ZodRawShapeCompat | AnySchema>,
   ]
 ) {
+  if (disabledToolNames.has(name)) return;
+
   const [config, cb] = args;
   const normalizedConfig = {
     ...config,

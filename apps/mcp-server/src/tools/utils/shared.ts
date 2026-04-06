@@ -1,3 +1,11 @@
+import type { ConnpassClient, Event } from "@kajidog/connpass-api-client";
+import type {
+  FormatEventOptions,
+  FormattedEvent,
+  FormattedPresentationsResponse,
+} from "./formatting.js";
+import { formatEvent, formatPresentationsResponse } from "./formatting.js";
+
 export const DEFAULT_PAGE_SIZE = 20;
 
 export const EVENT_SORT_KEYS = [
@@ -36,18 +44,23 @@ export const USER_SORT_MAP: Record<UserSortKey, 1 | 2 | 3> = {
   "newly-added": 3,
 };
 
-function formatAsCompactYmd(date: Date): string {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}${month}${day}`;
+export function startOfDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
 }
 
-function formatAsHyphenatedYmd(date: Date): string {
+function formatYmd(date: Date, separator: string): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return `${year}${separator}${month}${separator}${day}`;
+}
+
+function formatAsCompactYmd(date: Date): string {
+  return formatYmd(date, "");
+}
+
+export function formatDateLabel(date: Date): string {
+  return formatYmd(date, "-");
 }
 
 export function parseDateInput(
@@ -64,7 +77,7 @@ export function parseDateInput(
     const candidate = new Date(Date.UTC(year, month, day));
     if (!Number.isNaN(candidate.getTime())) {
       return options?.style === "hyphenated"
-        ? formatAsHyphenatedYmd(candidate)
+        ? formatDateLabel(candidate)
         : formatAsCompactYmd(candidate);
     }
   }
@@ -132,4 +145,120 @@ export function applyPagination(
   }
 
   return pagination;
+}
+
+// userId -> nickname キャッシュ
+const userNicknameCache = new Map<number, string>();
+
+export async function resolveUserNickname(
+  connpassClient: ConnpassClient,
+  options: {
+    userId?: number;
+    nickname?: string;
+    defaultUserId?: number;
+  },
+): Promise<{ resolvedUserId: number; userNickname: string }> {
+  let resolvedUserId: number | undefined =
+    options.userId ?? options.defaultUserId;
+  let userNickname: string | undefined;
+
+  if (options.nickname) {
+    const userSearchResponse = await connpassClient.searchUsers({
+      nickname: options.nickname,
+    });
+    if (userSearchResponse.users.length === 0) {
+      throw new Error(`User with nickname "${options.nickname}" not found.`);
+    }
+    const user = userSearchResponse.users[0];
+    resolvedUserId = user.id;
+    userNickname = user.nickname;
+    userNicknameCache.set(user.id, user.nickname);
+  }
+
+  if (!resolvedUserId) {
+    throw new Error(
+      "User ID or nickname is required. Pass userId, nickname, or set CONNPASS_DEFAULT_USER_ID.",
+    );
+  }
+
+  if (!userNickname) {
+    const cached = userNicknameCache.get(resolvedUserId);
+    if (cached) {
+      userNickname = cached;
+    } else {
+      const userResponse = await connpassClient.searchUsers({
+        userId: [resolvedUserId],
+      });
+      const found = userResponse.users.find(
+        (u: { id: number }) => u.id === resolvedUserId,
+      );
+      if (!found) {
+        throw new Error(`User with ID ${resolvedUserId} not found.`);
+      }
+      userNickname = found.nickname;
+      userNicknameCache.set(resolvedUserId, found.nickname);
+    }
+  }
+
+  return { resolvedUserId, userNickname };
+}
+
+export function calculateDateRange(
+  fromDate?: string,
+  toDate?: string,
+): { rangeStart: Date; rangeEnd: Date } {
+  const today = startOfDay(new Date());
+  const rangeStart = fromDate
+    ? startOfDay(new Date(parseHyphenatedDate(fromDate)))
+    : today;
+  const rangeEnd = toDate
+    ? startOfDay(new Date(parseHyphenatedDate(toDate)))
+    : (() => {
+        const defaultEnd = new Date(rangeStart);
+        defaultEnd.setDate(defaultEnd.getDate() + 7);
+        return defaultEnd;
+      })();
+  rangeEnd.setHours(23, 59, 59, 999);
+  return { rangeStart, rangeEnd };
+}
+
+export function groupEventsByDate<T extends { startedAt: string }>(
+  events: T[],
+): Map<string, T[]> {
+  const eventsByDate = new Map<string, T[]>();
+  for (const event of events) {
+    const eventDate = formatDateLabel(startOfDay(new Date(event.startedAt)));
+    if (!eventsByDate.has(eventDate)) {
+      eventsByDate.set(eventDate, []);
+    }
+    eventsByDate.get(eventDate)!.push(event);
+  }
+  return eventsByDate;
+}
+
+export async function fetchEventDetail(
+  connpassClient: ConnpassClient,
+  eventId: number,
+  formatOptions?: FormatEventOptions,
+): Promise<{
+  event: Event;
+  formatted: FormattedEvent;
+  presentations: FormattedPresentationsResponse | undefined;
+}> {
+  const [eventsResponse, presentationsResponse] = await Promise.all([
+    connpassClient.searchEvents({ eventId: [eventId], count: 1 }),
+    connpassClient.getEventPresentations(eventId).catch(() => undefined),
+  ]);
+
+  const event = eventsResponse.events[0];
+  if (!event) {
+    throw new Error(`Event with ID ${eventId} not found.`);
+  }
+
+  const formatted = formatEvent(event, formatOptions);
+  const presentations = presentationsResponse
+    ? formatPresentationsResponse(presentationsResponse)
+    : undefined;
+
+  return { event, formatted, presentations };
 }

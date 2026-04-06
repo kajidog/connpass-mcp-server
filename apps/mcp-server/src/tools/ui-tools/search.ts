@@ -125,6 +125,11 @@ export function registerUISearchTool(deps: ToolDeps): void {
       title: "Search Events (UI)",
       description: "Internal: re-search events from UI",
       inputSchema: UIEventSearchInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
       _meta: {
         ui: {
           resourceUri: connpassResourceUri,

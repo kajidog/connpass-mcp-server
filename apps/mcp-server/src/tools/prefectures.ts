@@ -71,6 +71,11 @@ export function registerPrefectureTools(deps: ToolDeps): void {
       title: "List Prefectures",
       description: "List supported prefectures and region codes for filtering",
       inputSchema: EmptyInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
     },
     async () => buildPrefectureListResult(),
   );
@@ -82,6 +87,11 @@ export function registerPrefectureTools(deps: ToolDeps): void {
       title: "Get Prefectures (UI)",
       description: "Internal: list supported prefectures for the UI",
       inputSchema: EmptyInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
       _meta: {
         ui: {
           visibility: ["app"],

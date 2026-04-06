@@ -3,7 +3,6 @@ import { resolvePrefectureInputs } from "./prefectures.js";
 import {
   FORMAT_PRESETS,
   type FormatEventOptions,
-  formatEvent,
   formatEventsResponse,
   formatPresentationsResponse,
   summarizeEventsResponse,
@@ -14,12 +13,13 @@ import {
   EVENT_SORT_KEYS,
   EVENT_SORT_MAP,
   applyPagination,
+  fetchEventDetail,
   normalizeKeywordOr,
   normalizeStringArray,
   parseHyphenatedDate,
   toYmdArray,
 } from "./utils/shared.js";
-import type { ToolDeps } from "./utils/types.js";
+import { type ToolDeps, paginationSchema } from "./utils/types.js";
 
 const EventSearchInputSchema = z.object({
   anyQuery: z
@@ -59,14 +59,7 @@ const EventSearchInputSchema = z.object({
     .union([z.string().min(1), z.array(z.string().min(1))])
     .describe("Prefecture name(s) to filter by")
     .optional(),
-  page: z.number().int().min(1).describe("1-based page number").optional(),
-  pageSize: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .describe("Events per page (default 20, max 100)")
-    .optional(),
+  ...paginationSchema,
   sort: z.enum(EVENT_SORT_KEYS).describe("Sort order").optional(),
   includeDetails: z
     .boolean()
@@ -158,6 +151,11 @@ export function registerEventTools(deps: ToolDeps): void {
       description:
         "Search Connpass events and return results as text for reasoning and recommendations. Use this whenever the user asks about events.",
       inputSchema: EventSearchInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     searchEventsHandler,
   );
@@ -175,6 +173,11 @@ export function registerEventTools(deps: ToolDeps): void {
           .uuid()
           .describe("Session ID returned by search_events"),
       }),
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: false,
+      },
       _meta: {
         ui: { resourceUri: connpassResourceUri },
       },
@@ -222,6 +225,11 @@ export function registerEventTools(deps: ToolDeps): void {
       title: "Get Event Presentations",
       description: "Look up presentation details for a specific event",
       inputSchema: EventPresentationsInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     async (args: Record<string, unknown>) => {
       const { eventId } = EventPresentationsInputSchema.parse(args ?? {});
@@ -242,24 +250,19 @@ export function registerEventTools(deps: ToolDeps): void {
       description:
         "Get full details of a specific event by ID, including complete description and presentations",
       inputSchema: EventPresentationsInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     async (args: Record<string, unknown>) => {
       const { eventId } = EventPresentationsInputSchema.parse(args ?? {});
-
-      const [eventsResponse, presentationsResponse] = await Promise.all([
-        connpassClient.searchEvents({ eventId: [eventId], count: 1 }),
-        connpassClient.getEventPresentations(eventId).catch(() => undefined),
-      ]);
-
-      const event = eventsResponse.events[0];
-      if (!event) {
-        throw new Error(`Event with ID ${eventId} not found.`);
-      }
-
-      const formatted = formatEvent(event, FORMAT_PRESETS.full);
-      const presentations = presentationsResponse
-        ? formatPresentationsResponse(presentationsResponse)
-        : undefined;
+      const { formatted, presentations } = await fetchEventDetail(
+        connpassClient,
+        eventId,
+        FORMAT_PRESETS.full,
+      );
 
       return {
         content: [

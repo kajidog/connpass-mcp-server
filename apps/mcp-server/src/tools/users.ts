@@ -14,7 +14,7 @@ import {
   USER_SORT_MAP,
   applyPagination,
 } from "./utils/shared.js";
-import type { ToolDeps } from "./utils/types.js";
+import { type ToolDeps, paginationSchema } from "./utils/types.js";
 
 const UserSearchInputSchema = z.object({
   nickname: z
@@ -26,14 +26,7 @@ const UserSearchInputSchema = z.object({
     .array(z.number())
     .describe("Limit to specific user IDs")
     .optional(),
-  page: z.number().int().min(1).describe("1-based page number").optional(),
-  pageSize: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .describe("Users per page (default 20)")
-    .optional(),
+  ...paginationSchema,
   sort: z
     .enum(USER_SORT_KEYS)
     .describe("Ranking by activity, followers, or recency")
@@ -97,6 +90,11 @@ export function registerUserTools(deps: ToolDeps): void {
       title: "Search Users",
       description: "Discover Connpass users",
       inputSchema: UserSearchInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     async (args: Record<string, unknown>) => {
       const params = UserSearchInputSchema.parse(args ?? {});
@@ -122,6 +120,11 @@ export function registerUserTools(deps: ToolDeps): void {
       title: "Get User Groups",
       description: "List the groups a user belongs to",
       inputSchema: UserGroupsInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     async (args: Record<string, unknown>) => {
       const { userId, limit, page } = UserGroupsInputSchema.parse(args ?? {});
@@ -142,6 +145,11 @@ export function registerUserTools(deps: ToolDeps): void {
       title: "Get User Attended Events",
       description: "List events that a user has attended",
       inputSchema: UserRelationshipInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     async (args: Record<string, unknown>) => {
       const parsed = UserRelationshipInputSchema.parse(args ?? {});
@@ -172,6 +180,11 @@ export function registerUserTools(deps: ToolDeps): void {
       title: "Get User Presenter Events",
       description: "List events where the user presented",
       inputSchema: UserRelationshipInputSchema,
+      annotations: {
+        readOnlyHint: true,
+        idempotentHint: true,
+        openWorldHint: true,
+      },
     },
     async (args: Record<string, unknown>) => {
       const parsed = UserRelationshipInputSchema.parse(args ?? {});
