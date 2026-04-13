@@ -3,6 +3,7 @@ import {
   EventsResponse,
   PresentationsResponse,
 } from "../../domain/entities";
+import { ConnpassValidationError } from "../../domain/errors";
 import { IEventRepository } from "../../domain/repositories";
 
 export class EventService {
@@ -14,7 +15,7 @@ export class EventService {
 
   async getEventPresentations(eventId: number): Promise<PresentationsResponse> {
     if (eventId <= 0) {
-      throw new Error("Event ID must be a positive number");
+      throw new ConnpassValidationError("Event ID must be a positive number");
     }
     return this.eventRepository.getEventPresentations(eventId);
   }

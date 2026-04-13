@@ -1,4 +1,9 @@
-import type { ConnpassClient, Event } from "@kajidog/connpass-api-client";
+import {
+  type ConnpassClient,
+  ConnpassError,
+  ConnpassValidationError,
+  type Event,
+} from "@kajidog/connpass-api-client";
 import type {
   FormatEventOptions,
   FormattedEvent,
@@ -82,7 +87,7 @@ export function parseDateInput(
     }
   }
 
-  throw new Error(
+  throw new ConnpassValidationError(
     `Invalid date format: ${input}. Expected YYYY-MM-DD or YYYYMMDD format.`,
   );
 }
@@ -102,7 +107,9 @@ export function parseHyphenatedDate(input: string): string {
     return `${digitsOnly.slice(0, 4)}-${digitsOnly.slice(4, 6)}-${digitsOnly.slice(6, 8)}`;
   }
 
-  throw new Error(`Could not convert date input to YYYY-MM-DD: ${input}`);
+  throw new ConnpassValidationError(
+    `Could not convert date input to YYYY-MM-DD: ${input}`,
+  );
 }
 
 export function normalizeStringArray(
@@ -188,7 +195,9 @@ export async function resolveUserNickname(
       nickname: options.nickname,
     });
     if (userSearchResponse.users.length === 0) {
-      throw new Error(`User with nickname "${options.nickname}" not found.`);
+      throw new ConnpassError(
+        `User with nickname "${options.nickname}" not found.`,
+      );
     }
     const user = userSearchResponse.users[0];
     resolvedUserId = user.id;
@@ -197,7 +206,7 @@ export async function resolveUserNickname(
   }
 
   if (!resolvedUserId) {
-    throw new Error(
+    throw new ConnpassValidationError(
       "User ID or nickname is required. Pass userId, nickname, or set CONNPASS_DEFAULT_USER_ID.",
     );
   }
@@ -214,7 +223,7 @@ export async function resolveUserNickname(
         (u: { id: number }) => u.id === resolvedUserId,
       );
       if (!found) {
-        throw new Error(`User with ID ${resolvedUserId} not found.`);
+        throw new ConnpassError(`User with ID ${resolvedUserId} not found.`);
       }
       userNickname = found.nickname;
       setCachedNickname(resolvedUserId, found.nickname);
@@ -273,7 +282,7 @@ export async function fetchEventDetail(
 
   const event = eventsResponse.events[0];
   if (!event) {
-    throw new Error(`Event with ID ${eventId} not found.`);
+    throw new ConnpassError(`Event with ID ${eventId} not found.`);
   }
 
   const formatted = formatEvent(event, formatOptions);

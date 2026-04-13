@@ -4,6 +4,7 @@ import {
   UserSearchParams,
   UsersResponse,
 } from "../../domain/entities";
+import { ConnpassError, ConnpassValidationError } from "../../domain/errors";
 import { IUserRepository } from "../../domain/repositories";
 
 export class UserService {
@@ -82,13 +83,15 @@ export class UserService {
     if (typeof userIdOrNickname === "string") {
       const nickname = userIdOrNickname.trim();
       if (!nickname) {
-        throw new Error("Nickname must be a non-empty string");
+        throw new ConnpassValidationError(
+          "Nickname must be a non-empty string",
+        );
       }
       return nickname;
     }
 
     if (!Number.isFinite(userIdOrNickname) || userIdOrNickname <= 0) {
-      throw new Error("User ID must be a positive number");
+      throw new ConnpassValidationError("User ID must be a positive number");
     }
 
     const userId = Math.trunc(userIdOrNickname);
@@ -104,7 +107,7 @@ export class UserService {
     const user = response.users.find((candidate) => candidate.id === userId);
 
     if (!user) {
-      throw new Error(`User with ID ${userId} was not found`);
+      throw new ConnpassError(`User with ID ${userId} was not found`);
     }
 
     this.nicknameCache.set(userId, user.nickname);

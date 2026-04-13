@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { resolvePrefectureInputs } from "./prefectures.js";
+import { withErrorHandling } from "./utils/errorHandler.js";
 import {
   FORMAT_PRESETS,
   type FormatEventOptions,
@@ -157,7 +158,7 @@ export function registerEventTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    searchEventsHandler,
+    withErrorHandling(searchEventsHandler),
   );
 
   // browse_events - 公開ツール（UI あり、対話ブラウズ向け）
@@ -182,7 +183,7 @@ export function registerEventTools(deps: ToolDeps): void {
         ui: { resourceUri: connpassResourceUri },
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const { searchSessionId } = z
         .object({
           searchSessionId: z.uuid(),
@@ -214,7 +215,7 @@ export function registerEventTools(deps: ToolDeps): void {
           data: formatted,
         },
       };
-    },
+    }),
   );
 
   // get_event_presentations - 公開ツール
@@ -231,14 +232,14 @@ export function registerEventTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const { eventId } = EventPresentationsInputSchema.parse(args ?? {});
       const response = await connpassClient.getEventPresentations(eventId);
       const formatted = formatPresentationsResponse(response);
       return {
         content: [{ type: "text" as const, text: JSON.stringify(formatted) }],
       };
-    },
+    }),
   );
 
   // get_event_detail - 公開ツール
@@ -256,7 +257,7 @@ export function registerEventTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const { eventId } = EventPresentationsInputSchema.parse(args ?? {});
       const { formatted, presentations } = await fetchEventDetail(
         connpassClient,
@@ -272,6 +273,6 @@ export function registerEventTools(deps: ToolDeps): void {
           },
         ],
       };
-    },
+    }),
   );
 }

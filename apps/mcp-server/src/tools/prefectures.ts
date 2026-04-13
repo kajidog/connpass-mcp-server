@@ -3,6 +3,7 @@ import {
   normalizePrefecture,
 } from "@kajidog/connpass-api-client";
 import { z } from "zod";
+import { withErrorHandling } from "./utils/errorHandler.js";
 import { registerAppToolIfEnabled } from "./utils/registration.js";
 import type { ToolDeps } from "./utils/types.js";
 
@@ -77,7 +78,7 @@ export function registerPrefectureTools(deps: ToolDeps): void {
         openWorldHint: false,
       },
     },
-    async () => buildPrefectureListResult(),
+    withErrorHandling(async () => buildPrefectureListResult()),
   );
 
   registerAppToolIfEnabled(
@@ -98,6 +99,6 @@ export function registerPrefectureTools(deps: ToolDeps): void {
         },
       },
     },
-    async () => buildPrefectureListResult(),
+    withErrorHandling(async () => buildPrefectureListResult()),
   );
 }

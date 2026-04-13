@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { withErrorHandling } from "./utils/errorHandler.js";
 import {
   FORMAT_PRESETS,
   formatEventsResponse,
@@ -96,7 +97,7 @@ export function registerUserTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const params = UserSearchInputSchema.parse(args ?? {});
       const pagination = applyPagination(params.page, params.pageSize);
       const response = await connpassClient.searchUsers({
@@ -110,7 +111,7 @@ export function registerUserTools(deps: ToolDeps): void {
           { type: "text" as const, text: summarizeUsersResponse(response) },
         ],
       };
-    },
+    }),
   );
 
   registerAppToolIfEnabled(
@@ -126,7 +127,7 @@ export function registerUserTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const { userId, limit, page } = UserGroupsInputSchema.parse(args ?? {});
       const pagination = applyPagination(page, limit);
       const response = await connpassClient.getUserGroups(userId, pagination);
@@ -135,7 +136,7 @@ export function registerUserTools(deps: ToolDeps): void {
           { type: "text" as const, text: summarizeGroupsResponse(response) },
         ],
       };
-    },
+    }),
   );
 
   registerAppToolIfEnabled(
@@ -151,7 +152,7 @@ export function registerUserTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const parsed = UserRelationshipInputSchema.parse(args ?? {});
       const { pagination, order } = buildUserRelationshipParams(parsed);
       const response = await connpassClient.getUserAttendedEvents(
@@ -170,7 +171,7 @@ export function registerUserTools(deps: ToolDeps): void {
           },
         ],
       };
-    },
+    }),
   );
 
   registerAppToolIfEnabled(
@@ -186,7 +187,7 @@ export function registerUserTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const parsed = UserRelationshipInputSchema.parse(args ?? {});
       const { pagination, order } = buildUserRelationshipParams(parsed);
       const response = await connpassClient.getUserPresenterEvents(
@@ -205,6 +206,6 @@ export function registerUserTools(deps: ToolDeps): void {
           },
         ],
       };
-    },
+    }),
   );
 }

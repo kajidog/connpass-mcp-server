@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { withErrorHandling } from "../utils/errorHandler.js";
 import { registerAppToolIfEnabled } from "../utils/registration.js";
 import { connpassResourceUri } from "../utils/resource.js";
 import { fetchEventDetail } from "../utils/shared.js";
@@ -30,7 +31,7 @@ export function registerUIEventDetailTool(deps: ToolDeps): void {
         },
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const { eventId } = UIEventDetailInputSchema.parse(args ?? {});
       const { formatted, presentations } = await fetchEventDetail(
         connpassClient,
@@ -51,6 +52,6 @@ export function registerUIEventDetailTool(deps: ToolDeps): void {
           },
         },
       };
-    },
+    }),
   );
 }
