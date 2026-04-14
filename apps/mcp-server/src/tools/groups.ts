@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { resolvePrefectureInputs } from "./prefectures.js";
+import { withErrorHandling } from "./utils/errorHandler.js";
 import { summarizeGroupsResponse } from "./utils/formatting.js";
 import { registerAppToolIfEnabled } from "./utils/registration.js";
 import {
@@ -67,7 +68,7 @@ export function registerGroupTools(deps: ToolDeps): void {
         openWorldHint: true,
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const params = GroupSearchInputSchema.parse(args ?? {});
       const searchParams = buildGroupSearchParams(params);
       if ("response" in searchParams) {
@@ -82,6 +83,6 @@ export function registerGroupTools(deps: ToolDeps): void {
           { type: "text" as const, text: summarizeGroupsResponse(response) },
         ],
       };
-    },
+    }),
   );
 }

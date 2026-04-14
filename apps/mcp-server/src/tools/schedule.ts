@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { withErrorHandling } from "./utils/errorHandler.js";
 import {
   FORMAT_PRESETS,
   formatEventList,
@@ -61,7 +62,7 @@ export function registerScheduleTools(deps: ToolDeps): void {
         ui: { resourceUri: connpassResourceUri },
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const parsed = ScheduleInputSchema.parse(args ?? {});
 
       const { resolvedUserId, userNickname } = await resolveUserNickname(
@@ -136,6 +137,6 @@ export function registerScheduleTools(deps: ToolDeps): void {
           data: result,
         },
       };
-    },
+    }),
   );
 }

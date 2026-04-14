@@ -1,6 +1,7 @@
 import type { Event } from "@kajidog/connpass-api-client";
 import { z } from "zod";
 import { resolvePrefectureInputs } from "../prefectures.js";
+import { withErrorHandling } from "../utils/errorHandler.js";
 import { formatEvent, formatEventsResponse } from "../utils/formatting.js";
 import { registerAppToolIfEnabled } from "../utils/registration.js";
 import { connpassResourceUri } from "../utils/resource.js";
@@ -137,7 +138,7 @@ export function registerUISearchTool(deps: ToolDeps): void {
         },
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const params = UIEventSearchInputSchema.parse(args ?? {});
       const useLocalFiltering =
         Boolean(params.companyQuery) ||
@@ -212,6 +213,6 @@ export function registerUISearchTool(deps: ToolDeps): void {
           data: formatted,
         },
       };
-    },
+    }),
   );
 }

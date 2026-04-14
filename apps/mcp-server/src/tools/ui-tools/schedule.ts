@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { withErrorHandling } from "../utils/errorHandler.js";
 import { formatEventList } from "../utils/formatting.js";
 import { registerAppToolIfEnabled } from "../utils/registration.js";
 import { connpassResourceUri } from "../utils/resource.js";
@@ -46,7 +47,7 @@ export function registerUIScheduleTool(deps: ToolDeps): void {
         },
       },
     },
-    async (args: Record<string, unknown>) => {
+    withErrorHandling(async (args: Record<string, unknown>) => {
       const parsed = UIScheduleInputSchema.parse(args ?? {});
 
       const { resolvedUserId, userNickname } = await resolveUserNickname(
@@ -100,6 +101,6 @@ export function registerUIScheduleTool(deps: ToolDeps): void {
           data: result,
         },
       };
-    },
+    }),
   );
 }
