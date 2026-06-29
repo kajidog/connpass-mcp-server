@@ -223,7 +223,9 @@ export async function resolveUserNickname(
         (u: { id: number }) => u.id === resolvedUserId,
       );
       if (!found) {
-        throw new ConnpassError(`User with ID ${resolvedUserId} not found.`);
+        throw new ConnpassError(
+          `Could not resolve user ID ${resolvedUserId} to a nickname. The connpass API looks up users by nickname, not numeric ID — pass a nickname instead.`,
+        );
       }
       userNickname = found.nickname;
       setCachedNickname(resolvedUserId, found.nickname);

@@ -34,40 +34,75 @@ const UserSearchInputSchema = z.object({
     .optional(),
 });
 
-const UserGroupsInputSchema = z.object({
-  userId: z.number().int().positive().describe("Connpass user ID"),
-  limit: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .describe("How many to return (default 20)")
-    .optional(),
-  page: z.number().int().min(1).describe("1-based page number").optional(),
-});
+// connpass resolves users by nickname, not numeric ID — nickname is the
+// reliable identifier. A bare userId only resolves if its nickname was looked
+// up earlier in the session, so it is accepted but discouraged.
+const nicknameField = z
+  .string()
+  .min(1)
+  .describe(
+    "Connpass nickname (recommended — the API resolves users by nickname, not numeric ID)",
+  )
+  .optional();
 
-const UserRelationshipInputSchema = z.object({
-  userId: z.number().int().positive().describe("Connpass user ID"),
-  limit: z
-    .number()
-    .int()
-    .min(1)
-    .max(100)
-    .describe("How many to return (default 20)")
-    .optional(),
-  page: z.number().int().min(1).describe("1-based page number").optional(),
-  sort: z
-    .enum(EVENT_SORT_KEYS)
-    .describe("Sort events by schedule or recency")
-    .optional(),
-  includeDetails: z
-    .boolean()
-    .describe(
-      "Include event description (up to 200 chars). Use when you need content details for recommendations.",
-    )
-    .default(false)
-    .optional(),
-});
+const userIdField = z
+  .number()
+  .int()
+  .positive()
+  .describe(
+    "Connpass user ID (prefer nickname; a numeric ID only resolves if its nickname was looked up earlier)",
+  )
+  .optional();
+
+const requireUserRef = (value: {
+  userId?: number;
+  nickname?: string;
+}): boolean => value.userId !== undefined || value.nickname !== undefined;
+
+const requireUserRefMessage = {
+  message: "Provide a nickname (recommended) or userId",
+};
+
+const UserGroupsInputSchema = z
+  .object({
+    userId: userIdField,
+    nickname: nicknameField,
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .describe("How many to return (default 20)")
+      .optional(),
+    page: z.number().int().min(1).describe("1-based page number").optional(),
+  })
+  .refine(requireUserRef, requireUserRefMessage);
+
+const UserRelationshipInputSchema = z
+  .object({
+    userId: userIdField,
+    nickname: nicknameField,
+    limit: z
+      .number()
+      .int()
+      .min(1)
+      .max(100)
+      .describe("How many to return (default 20)")
+      .optional(),
+    page: z.number().int().min(1).describe("1-based page number").optional(),
+    sort: z
+      .enum(EVENT_SORT_KEYS)
+      .describe("Sort events by schedule or recency")
+      .optional(),
+    includeDetails: z
+      .boolean()
+      .describe(
+        "Include event description (up to 200 chars). Use when you need content details for recommendations.",
+      )
+      .default(false)
+      .optional(),
+  })
+  .refine(requireUserRef, requireUserRefMessage);
 
 type UserRelationshipInput = z.infer<typeof UserRelationshipInputSchema>;
 
@@ -128,9 +163,14 @@ export function registerUserTools(deps: ToolDeps): void {
       },
     },
     withErrorHandling(async (args: Record<string, unknown>) => {
-      const { userId, limit, page } = UserGroupsInputSchema.parse(args ?? {});
+      const { userId, nickname, limit, page } = UserGroupsInputSchema.parse(
+        args ?? {},
+      );
       const pagination = applyPagination(page, limit);
-      const response = await connpassClient.getUserGroups(userId, pagination);
+      const response = await connpassClient.getUserGroups(
+        (nickname ?? userId) as string | number,
+        pagination,
+      );
       return {
         content: [
           { type: "text" as const, text: summarizeGroupsResponse(response) },
@@ -156,7 +196,7 @@ export function registerUserTools(deps: ToolDeps): void {
       const parsed = UserRelationshipInputSchema.parse(args ?? {});
       const { pagination, order } = buildUserRelationshipParams(parsed);
       const response = await connpassClient.getUserAttendedEvents(
-        parsed.userId,
+        (parsed.nickname ?? parsed.userId) as string | number,
         { ...pagination, order },
       );
       const formatOptions = parsed.includeDetails
@@ -191,7 +231,7 @@ export function registerUserTools(deps: ToolDeps): void {
       const parsed = UserRelationshipInputSchema.parse(args ?? {});
       const { pagination, order } = buildUserRelationshipParams(parsed);
       const response = await connpassClient.getUserPresenterEvents(
-        parsed.userId,
+        (parsed.nickname ?? parsed.userId) as string | number,
         { ...pagination, order },
       );
       const formatOptions = parsed.includeDetails

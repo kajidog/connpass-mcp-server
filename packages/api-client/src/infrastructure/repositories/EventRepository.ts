@@ -17,6 +17,38 @@ import {
   mapApiPresentation,
 } from "./apiTypes";
 
+// connpass API v2 has no native date-range parameter. A range must be expanded
+// into repeated `ymd` (per-day) or `ym` (per-month) values. The upstream gateway
+// returns HTTP 502 once a request carries more than ~200 `ymd` values, so ranges
+// wider than this many days fall back to month granularity to keep the query small.
+const MAX_YMD_RANGE_DAYS = 62;
+
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** Parse a `YYYY-MM-DD` (or `YYYYMMDD`) string into a timezone-stable local Date. */
+function parseLocalDate(value: string): Date | undefined {
+  const match = /^(\d{4})-?(\d{2})-?(\d{2})$/.exec(value);
+  if (!match) {
+    const fallback = new Date(value);
+    return Number.isNaN(fallback.getTime()) ? undefined : fallback;
+  }
+  const [, y, m, d] = match;
+  return new Date(Number(y), Number(m) - 1, Number(d));
+}
+
+function toCompactYmd(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}${m}${d}`;
+}
+
+function toCompactYm(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  return `${y}${m}`;
+}
+
 export class EventRepository implements IEventRepository {
   constructor(
     private httpClient: HttpClient,
@@ -54,33 +86,42 @@ export class EventRepository implements IEventRepository {
     if (params.eventId) queryParams.event_id = params.eventId;
     if (params.keyword) queryParams.keyword = params.keyword;
     if (params.keywordOr) queryParams.keyword_or = params.keywordOr;
-    if (params.ymd) queryParams.ymd = params.ymd.join(",");
-    // For v2 compatibility: expand ymdFrom..ymdTo into comma-separated ymd list, while still passing v1 params
-    if (params.ymdFrom) queryParams.ymd_from = params.ymdFrom;
-    if (params.ymdTo) queryParams.ymd_to = params.ymdTo;
-    if (params.ymdFrom || params.ymdTo) {
-      const from = params.ymdFrom ? new Date(params.ymdFrom) : undefined;
-      const to = params.ymdTo ? new Date(params.ymdTo) : undefined;
-      if (from && !Number.isNaN(from.getTime())) {
-        const end = to && !Number.isNaN(to.getTime()) ? to : from;
-        const list: string[] = [];
+
+    // Multi-value params must be sent as repeated query params (handled by the
+    // HttpClient's `arrayFormat: "repeat"` serializer), not comma-joined —
+    // connpass only honors the last value of a comma-joined `ymd`.
+    const ymdValues: string[] = params.ymd ? [...params.ymd] : [];
+
+    // Expand the requested date range. `ymd_from`/`ymd_to` are not understood by
+    // the v2 API, so we translate the range into `ymd`/`ym` ourselves.
+    const from = params.ymdFrom ? parseLocalDate(params.ymdFrom) : undefined;
+    const to = params.ymdTo ? parseLocalDate(params.ymdTo) : undefined;
+    if (from) {
+      const end = to ?? from;
+      const dayCount =
+        Math.floor((end.getTime() - from.getTime()) / MS_PER_DAY) + 1;
+
+      if (dayCount > 0 && dayCount <= MAX_YMD_RANGE_DAYS) {
+        // Short range: precise per-day filtering.
         const cur = new Date(from);
-        // normalize to local date, increment by 1 day
-        // cap at 366 iterations to avoid runaway
-        let guard = 0;
-        while (cur <= end && guard < 366) {
-          const y = cur.getFullYear();
-          const m = String(cur.getMonth() + 1).padStart(2, "0");
-          const d = String(cur.getDate()).padStart(2, "0");
-          list.push(`${y}${m}${d}`);
+        while (cur <= end) {
+          ymdValues.push(toCompactYmd(cur));
           cur.setDate(cur.getDate() + 1);
-          guard += 1;
         }
-        if (list.length) {
-          queryParams.ymd = list.join(",");
+      } else if (dayCount > 0) {
+        // Wide range: fall back to per-month granularity to avoid the 502 limit.
+        const months: string[] = [];
+        const cur = new Date(from.getFullYear(), from.getMonth(), 1);
+        const last = new Date(end.getFullYear(), end.getMonth(), 1);
+        while (cur <= last) {
+          months.push(toCompactYm(cur));
+          cur.setMonth(cur.getMonth() + 1);
         }
+        if (months.length) queryParams.ym = months;
       }
     }
+
+    if (ymdValues.length) queryParams.ymd = ymdValues;
     if (params.nickname) queryParams.nickname = params.nickname;
     if (params.ownerNickname) queryParams.owner_nickname = params.ownerNickname;
     if (params.groupId) queryParams.group_id = params.groupId;

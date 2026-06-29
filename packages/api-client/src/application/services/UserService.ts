@@ -107,7 +107,9 @@ export class UserService {
     const user = response.users.find((candidate) => candidate.id === userId);
 
     if (!user) {
-      throw new ConnpassError(`User with ID ${userId} was not found`);
+      throw new ConnpassError(
+        `Could not resolve user ID ${userId} to a nickname. The connpass API looks up users by nickname, not numeric ID — pass a nickname instead.`,
+      );
     }
 
     this.nicknameCache.set(userId, user.nickname);
