@@ -32,5 +32,17 @@
         "recommended": false
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "include": ["packages/connpass-ui/src/components/ui/**"],
+      "linter": {
+        "rules": {
+          "a11y": {
+            "recommended": false
+          }
+        }
+      }
+    }
+  ]
 }

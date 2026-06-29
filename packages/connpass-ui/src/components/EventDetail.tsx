@@ -204,47 +204,50 @@ export function EventDetail({
           >
             発表一覧
           </h3>
-          {event.presentations.map((p) => (
-            <div
-              key={p.id}
-              className="p-3 rounded-xl text-xs"
-              style={{
-                background: "var(--ui-bg)",
-                border: "1px solid var(--ui-border)",
-              }}
-            >
+          {event.presentations.map((p) => {
+            const slideUrl = p.links?.url;
+            return (
               <div
-                className="text-sm font-medium"
-                style={{ color: "var(--ui-text)" }}
+                key={p.id}
+                className="p-3 rounded-xl text-xs"
+                style={{
+                  background: "var(--ui-bg)",
+                  border: "1px solid var(--ui-border)",
+                }}
               >
-                {p.title}
-              </div>
-              <div
-                className="mt-1"
-                style={{ color: "var(--ui-text-secondary)" }}
-              >
-                {p.speaker}
-              </div>
-              {p.summary && (
                 <div
-                  className="mt-2 leading-relaxed"
+                  className="text-sm font-medium"
+                  style={{ color: "var(--ui-text)" }}
+                >
+                  {p.title}
+                </div>
+                <div
+                  className="mt-1"
                   style={{ color: "var(--ui-text-secondary)" }}
                 >
-                  {p.summary}
+                  {p.speaker}
                 </div>
-              )}
-              {p.links?.url && (
-                <button
-                  type="button"
-                  onClick={() => onOpenLink(p.links.url)}
-                  className="mt-2 text-xs underline"
-                  style={{ color: "var(--ui-accent)" }}
-                >
-                  スライドを見る
-                </button>
-              )}
-            </div>
-          ))}
+                {p.summary && (
+                  <div
+                    className="mt-2 leading-relaxed"
+                    style={{ color: "var(--ui-text-secondary)" }}
+                  >
+                    {p.summary}
+                  </div>
+                )}
+                {slideUrl && (
+                  <button
+                    type="button"
+                    onClick={() => onOpenLink(slideUrl)}
+                    className="mt-2 text-xs underline"
+                    style={{ color: "var(--ui-accent)" }}
+                  >
+                    スライドを見る
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </section>
       )}
 

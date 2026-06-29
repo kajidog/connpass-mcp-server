@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { type FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import type { SearchScheduleParams } from "../hooks/connpassToolClient";
 import type { FormattedEvent, ScheduleResult } from "../types";
 import {
@@ -9,6 +9,12 @@ import {
 } from "../utils/datePreset";
 import { EventCard } from "./shared/EventCard";
 import { Spinner } from "./shared/Spinner";
+import {
+  SyncedSectionNav,
+  type SyncedSectionNavItem,
+} from "./shared/SyncedSectionNav";
+
+const DATE_NAV_SCROLL_OFFSET = 72;
 
 interface ScheduleViewProps {
   result: ScheduleResult | null;
@@ -21,12 +27,31 @@ interface ScheduleViewProps {
 
 const WEEKDAYS = ["日", "月", "火", "水", "木", "金", "土"];
 
-function formatDateHeader(dateStr: string): string {
-  const date = new Date(dateStr);
+function parseDateOnly(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  if (
+    Number.isInteger(year) &&
+    Number.isInteger(month) &&
+    Number.isInteger(day)
+  ) {
+    return new Date(year, month - 1, day);
+  }
+  return new Date(dateStr);
+}
+
+function formatDateParts(dateStr: string): { label: string; weekday: string } {
+  const date = parseDateOnly(dateStr);
+  if (Number.isNaN(date.getTime())) {
+    return { label: dateStr, weekday: "" };
+  }
   const month = date.getMonth() + 1;
   const day = date.getDate();
-  const weekday = WEEKDAYS[date.getDay()];
-  return `${month}/${day}(${weekday})`;
+  return { label: `${month}/${day}`, weekday: WEEKDAYS[date.getDay()] };
+}
+
+function formatDateHeader(dateStr: string): string {
+  const { label, weekday } = formatDateParts(dateStr);
+  return weekday ? `${label}(${weekday})` : label;
 }
 
 function inferPresetFromDates(from: string, to: string): DatePreset {
@@ -45,6 +70,7 @@ export function ScheduleView({
   onSearchSchedule,
   onSelectEvent,
 }: ScheduleViewProps) {
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
   const initialFrom = result?.metadata?.fromDate ?? "";
   const initialTo = result?.metadata?.toDate ?? "";
   const [datePreset, setDatePreset] = useState<DatePreset>(() =>
@@ -60,6 +86,23 @@ export function ScheduleView({
     if (initialNickname) setNickname(initialNickname);
   }, [initialNickname]);
 
+  const sections = useMemo(() => result?.sections ?? [], [result]);
+
+  const dateItems = useMemo<SyncedSectionNavItem[]>(
+    () =>
+      sections.map((section) => {
+        const { label, weekday } = formatDateParts(section.date);
+        const countLabel = `${section.events.length}件`;
+        return {
+          id: section.date,
+          label,
+          meta: weekday ? `${weekday}・${countLabel}` : countLabel,
+          ariaLabel: `${formatDateHeader(section.date)} ${countLabel}`,
+        };
+      }),
+    [sections],
+  );
+
   const handlePreset = (preset: DatePresetKey) => {
     const range = createDatePreset(preset);
     setDatePreset(preset);
@@ -69,7 +112,7 @@ export function ScheduleView({
 
   const isCustomDate = datePreset === "custom";
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     const params: SearchScheduleParams = {};
     const trimmedNickname = nickname.trim();
@@ -90,7 +133,11 @@ export function ScheduleView({
   };
 
   return (
-    <div className="flex flex-col gap-3 p-2">
+    <div
+      ref={scrollContainerRef}
+      className="flex flex-col gap-3 overflow-y-auto p-2"
+      style={{ maxHeight: "600px" }}
+    >
       {/* Period selector */}
       <form
         onSubmit={handleSubmit}
@@ -235,15 +282,35 @@ export function ScheduleView({
 
       {result && !loading && (
         <>
+          {dateItems.length > 0 && (
+            <div
+              className="sticky top-0 z-20 -mx-2 px-2 py-2"
+              style={{
+                background: "var(--ui-bg)",
+                borderBottom: "1px solid var(--ui-border)",
+              }}
+            >
+              <SyncedSectionNav
+                items={dateItems}
+                ariaLabel="日付"
+                scrollOffset={DATE_NAV_SCROLL_OFFSET}
+                scrollContainerRef={scrollContainerRef}
+              />
+            </div>
+          )}
           <div
             className="px-1 text-xs"
             style={{ color: "var(--ui-text-secondary)" }}
           >
             {result.metadata.fromDate} 〜 {result.metadata.toDate} (
-            {result.sections.reduce((sum, s) => sum + s.events.length, 0)}件)
+            {sections.reduce((sum, s) => sum + s.events.length, 0)}件)
           </div>
-          {result.sections.map((section) => (
-            <div key={section.date} className="flex flex-col gap-2">
+          {sections.map((section) => (
+            <div
+              id={section.date}
+              key={section.date}
+              className="flex flex-col gap-2"
+            >
               <h3
                 className="text-xs font-bold px-1 pt-1"
                 style={{ color: "var(--ui-text)" }}
@@ -260,7 +327,7 @@ export function ScheduleView({
               ))}
             </div>
           ))}
-          {result.sections.length === 0 && (
+          {sections.length === 0 && (
             <div
               className="py-8 text-center text-sm"
               style={{ color: "var(--ui-text-secondary)" }}
