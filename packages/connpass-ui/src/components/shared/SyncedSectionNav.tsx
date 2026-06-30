@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { RefObject } from "react";
 import {
@@ -49,6 +49,8 @@ interface SyncedSectionNavProps<T extends SyncedSectionNavItem> {
   onActiveChange?: (id: string | null) => void;
   onSelect?: (id: string) => void;
 }
+
+const SCROLL_SYNC_IDLE_MS = 120;
 
 function resolveOffset(offset: number | (() => number)): number {
   return typeof offset === "function" ? offset() : offset;
@@ -120,6 +122,8 @@ export function SyncedSectionNav<T extends SyncedSectionNavItem>({
 }: SyncedSectionNavProps<T>) {
   const [api, setApi] = useState<CarouselApi>();
   const [activeId, setActiveId] = useState<string | null>(items[0]?.id ?? null);
+  const clickedScrollLockRef = useRef(false);
+  const scrollSyncResumeTimerRef = useRef<number | null>(null);
 
   const resolveSectionElement = useCallback(
     (id: string) => getSectionElement?.(id) ?? document.getElementById(id),
@@ -184,6 +188,18 @@ export function SyncedSectionNav<T extends SyncedSectionNavItem>({
       // scroll イベントの連打で active 判定を過剰に走らせない。
       frame = window.requestAnimationFrame(() => {
         frame = 0;
+        // クリック直後の smooth scroll 中は、位置ベースの判定で選択先を上書きしない。
+        if (clickedScrollLockRef.current) {
+          if (scrollSyncResumeTimerRef.current !== null) {
+            window.clearTimeout(scrollSyncResumeTimerRef.current);
+          }
+          scrollSyncResumeTimerRef.current = window.setTimeout(() => {
+            scrollSyncResumeTimerRef.current = null;
+            // active はクリック時に更新済みなので、停止後は通常同期へ戻すだけにする。
+            clickedScrollLockRef.current = false;
+          }, SCROLL_SYNC_IDLE_MS);
+          return;
+        }
         computeActiveId();
       });
     };
@@ -196,6 +212,10 @@ export function SyncedSectionNav<T extends SyncedSectionNavItem>({
       root.removeEventListener("scroll", requestCompute);
       window.removeEventListener("resize", requestCompute);
       if (frame) window.cancelAnimationFrame(frame);
+      if (scrollSyncResumeTimerRef.current !== null) {
+        window.clearTimeout(scrollSyncResumeTimerRef.current);
+        scrollSyncResumeTimerRef.current = null;
+      }
     };
   }, [computeActiveId, getScrollContainer, items.length, scrollContainerRef]);
 
@@ -215,6 +235,11 @@ export function SyncedSectionNav<T extends SyncedSectionNavItem>({
 
       updateActiveId(id);
       onSelect?.(id);
+      clickedScrollLockRef.current = true;
+      if (scrollSyncResumeTimerRef.current !== null) {
+        window.clearTimeout(scrollSyncResumeTimerRef.current);
+        scrollSyncResumeTimerRef.current = null;
+      }
       scrollRootTo(root, Math.max(0, top), scrollBehavior);
     },
     [
